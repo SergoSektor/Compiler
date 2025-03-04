@@ -495,7 +495,7 @@
             richTextBox1.Location = new Point(3, 4);
             richTextBox1.Margin = new Padding(3, 4, 3, 4);
             richTextBox1.Name = "richTextBox1";
-            richTextBox1.Size = new Size(722, 252);
+            richTextBox1.Size = new Size(721, 252);
             richTextBox1.TabIndex = 25;
             richTextBox1.Text = "";
             richTextBox1.WordWrap = false;
@@ -508,7 +508,7 @@
             richTextBox2.Margin = new Padding(3, 4, 3, 4);
             richTextBox2.Name = "richTextBox2";
             richTextBox2.ReadOnly = true;
-            richTextBox2.Size = new Size(775, 253);
+            richTextBox2.Size = new Size(775, 252);
             richTextBox2.TabIndex = 19;
             richTextBox2.Text = "тестовый текст";
             richTextBox2.WordWrap = false;
@@ -541,7 +541,7 @@
             Controls.Add(menuStrip2);
             Margin = new Padding(3, 4, 3, 4);
             Name = "Compiler";
-            Text = "Compiler";
+            Text = "Компилятор";
             menuStrip2.ResumeLayout(false);
             menuStrip2.PerformLayout();
             toolStrip1.ResumeLayout(false);

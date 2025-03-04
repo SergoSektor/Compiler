@@ -322,7 +322,7 @@ namespace lab1_compiler
                 ? ""
                 : $" ({filePath})";
 
-            return $"Compiler — {fileName}{asterisk}{pathInfo}";
+            return $"Компилятор — {fileName}{asterisk}{pathInfo}";
         }
 
         /// <summary>
