@@ -12,48 +12,7 @@ namespace lab1_compiler
 
     public partial class Compiler : Form
     {
-        /// <summary>
-        /// выкинуть в другой файл
-        /// </summary>
-        /// 
-        // Список ключевых слов PHP
-        private readonly string[] _phpKeywords = {
-    "abstract", "and", "array", "as", "break", "callable", "case", "catch",
-    "class", "clone", "const", "continue", "declare", "default", "die", "do",
-    "echo", "else", "elseif", "empty", "enddeclare", "endfor", "endforeach",
-    "endif", "endswitch", "endwhile", "eval", "exit", "extends", "final",
-    "finally", "fn", "for", "foreach", "function", "global", "goto", "if",
-    "implements", "include", "include_once", "instanceof", "insteadof",
-    "interface", "isset", "list", "namespace", "new", "or", "print", "private",
-    "protected", "public", "require", "require_once", "return", "static",
-    "switch", "throw", "trait", "try", "unset", "use", "var", "while", "xor"
-};
-
-        private readonly Color _keywordColor = Color.Blue;
-        private readonly Color _variableColor = Color.DarkOrange;
-
-        private const uint CFM_BOLD = 0x00000001;
-        private const uint CFM_COLOR = 0x40000000;
-        private const uint CFE_BOLD = 0x00000001;
-        private const int SCF_SELECTION = 0x0001;
-        [StructLayout(LayoutKind.Sequential)]
-        private struct CHARFORMAT2
-        {
-            public uint cbSize;
-            public uint dwMask;
-            public uint dwEffects;
-            public int yHeight;
-            public int yOffset;
-            public int crTextColor;
-        }
-
-        // WinAPI для безопасного изменения стилей
-        [DllImport("user32.dll")]
-        private static extern int SendMessage(IntPtr hWnd, int wMsg, IntPtr wParam, IntPtr lParam);
-        private const int WM_SETREDRAW = 0x0B;
-        private const int EM_GETCHARFORMAT = 0x43A;
-        private const int EM_SETCHARFORMAT = 0x444;
-
+        
         private readonly List<float> _defaultFontSizes = new List<float> { 8, 9, 10,11, 12, 14, 16, 18, 20,24 };
 
         /// Берём функции для элементов меню
@@ -86,48 +45,9 @@ namespace lab1_compiler
             toolStripStatusLabel1.Text = "Compiler успешно запущена";
             richTextBox1.TextChanged += RichTextBox1_TextChanged;
 
-            //richTextBox1.TextChanged += (sender, e) =>
-            //{
-            //    ApplySyntaxHighlighting(); // Вызов подсветки
-            //                               // Другие действия (обновление статуса и т.д.)
-            //};
         }
 
-        //22222222222222222222222222222222
-
-
-
-        private void ApplySyntaxHighlighting()
-        {
-            // Блокируем обновление интерфейса
-            SendMessage(richTextBox1.Handle, WM_SETREDRAW, (IntPtr)0, IntPtr.Zero);
-
-            // Сохраняем текущее состояние
-            int originalStart = richTextBox1.SelectionStart;
-            Color originalColor = richTextBox1.SelectionColor;
-            Font originalFont = richTextBox1.SelectionFont;
-
-            // Очищаем предыдущие стили
-            SetDefaultStyle();
-
-            // Подсветка ключевых слов
-            foreach (var keyword in _phpKeywords)
-            {
-                HighlightMatches(@"\b" + Regex.Escape(keyword) + @"\b", _keywordColor, FontStyle.Bold);
-            }
-
-            // Подсветка переменных ($var)
-            HighlightMatches(@"\$[a-zA-Z_]\w*", _variableColor, FontStyle.Regular);
-
-            // Восстанавливаем состояние
-            richTextBox1.SelectionStart = originalStart;
-            richTextBox1.SelectionColor = originalColor;
-            richTextBox1.SelectionFont = originalFont;
-
-            // Разблокируем обновление интерфейса
-            SendMessage(richTextBox1.Handle, WM_SETREDRAW, (IntPtr)1, IntPtr.Zero);
-            richTextBox1.Invalidate();
-        }
+        
         private void SetDefaultStyle()
         {
             // Устанавливает стиль по умолчанию для всего текста
