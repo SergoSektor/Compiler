@@ -15,6 +15,8 @@ namespace lab1_compiler
         
         private readonly List<float> _defaultFontSizes = new List<float> { 8, 9, 10,11, 12, 14, 16, 18, 20,24 };
 
+        private readonly LexicalAnalyzer _lexer = new LexicalAnalyzer();
+
         /// Берём функции для элементов меню
         private readonly FileManager _fileHandler;
         private readonly CorManager _corManager;
@@ -47,7 +49,14 @@ namespace lab1_compiler
 
         }
 
-        
+        private void InitializeDataGridView()
+        {
+            dataGridView1.Columns.Add("Code", "Код");
+            dataGridView1.Columns.Add("Type", "Тип");
+            dataGridView1.Columns.Add("Value", "Лексема");
+            dataGridView1.Columns.Add("Position", "Позиция");
+        }
+
         private void SetDefaultStyle()
         {
             // Устанавливает стиль по умолчанию для всего текста
@@ -68,21 +77,26 @@ namespace lab1_compiler
         }
 
 
-        ///
+        /// статусная строка
         private void RichTextBox1_TextChanged(object sender, EventArgs e)
         {
-            // Проверяем, пустой ли RichTextBox
-            if (string.IsNullOrEmpty(richTextBox1.Text))
+            // Запускаем лексический анализатор при изменении текста
+            _lexer.Analyze(richTextBox1.Text);
+
+            int tokenCount = _lexer.Tokens.Count;
+            int errorCount = _lexer.Errors.Count;
+
+            // Формируем сообщение в зависимости от результатов сканирования
+            if (errorCount == 0)
             {
-                toolStripStatusLabel1.Text = "Ошибок нет";
+                toolStripStatusLabel1.Text = $"Сканирование выполнено успешно. Токенов: {tokenCount}";
             }
             else
             {
-                toolStripStatusLabel1.Text = "Обнаружены ошибки";
+                toolStripStatusLabel1.Text = $"Обнаружено ошибок: {errorCount}. Токенов: {tokenCount}";
             }
-
-
         }
+
 
 
         /// <summary>
@@ -284,7 +298,6 @@ namespace lab1_compiler
 
                 // Обновляем шрифт
                 UpdateFontSize(richTextBox1, newSize);
-                UpdateFontSize(richTextBox2, newSize);
                 UpdateFontSize(richTextBoxLineNumbers, newSize);
 
                 // Обновляем текст без добавления в Items
@@ -442,8 +455,59 @@ namespace lab1_compiler
 
         private void toolStripButtonPlay_Click(object sender, EventArgs e)
         {
+            _lexer.Analyze(richTextBox1.Text);
+            dataGridView1.Rows.Clear();
+
+            // Сбрасываем форматирование
+            richTextBox1.SelectAll();
+            richTextBox1.SelectionColor = Color.Black;
+
+            foreach (var token in _lexer.Tokens)
+            {
+                dataGridView1.Rows.Add(
+                    token.Code,
+                    token.Type,
+                    token.Value,
+                    token.Position
+                );
+            }
+
+            richTextBox1.SelectAll();
+            richTextBox1.SelectionBackColor = richTextBox1.BackColor;
+            // Подсветка ошибок в richTextBox1
+            foreach (var error in _lexer.Errors.ToList())
+            {
+                // Ищем позицию ошибки по сообщению вида "строке {line}, позиция {pos}: ..."
+                Match match = Regex.Match(error, @"строке (\d+), позиция (\d+)");
+                if (match.Success)
+                {
+                    int line = int.Parse(match.Groups[1].Value) - 1;
+                    int pos = int.Parse(match.Groups[2].Value) - 1;
+
+                    int startIndex = GetCharIndexFromLineAndPosition(richTextBox1, line, pos);
+                    if (startIndex != -1 && startIndex < richTextBox1.Text.Length)
+                    {
+                        richTextBox1.Select(startIndex, 1); // выделяем 1 символ
+                        richTextBox1.SelectionBackColor = Color.Red; // устанавливаем красный фон
+                    }
+                }
+            }
 
         }
+
+        private int GetCharIndexFromLineAndPosition(RichTextBox rtb, int line, int position)
+        {
+            if (line < 0 || line >= rtb.Lines.Length) return -1;
+
+            int charIndex = 0;
+            for (int i = 0; i < line; i++)
+            {
+                charIndex += rtb.Lines[i].Length + 1; // учитываем символ переноса строки
+            }
+            return charIndex + position;
+        }
+
+
 
         ///
 

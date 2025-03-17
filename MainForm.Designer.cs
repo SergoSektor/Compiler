@@ -75,7 +75,11 @@
             splitContainer1 = new SplitContainer();
             richTextBoxLineNumbers = new RichTextBox();
             richTextBox1 = new RichTextBox();
-            richTextBox2 = new RichTextBox();
+            dataGridView1 = new DataGridView();
+            Code = new DataGridViewTextBoxColumn();
+            Type = new DataGridViewTextBoxColumn();
+            Value = new DataGridViewTextBoxColumn();
+            Position = new DataGridViewTextBoxColumn();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             menuStrip2.SuspendLayout();
@@ -88,6 +92,7 @@
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
             splitContainer1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             statusStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -101,35 +106,35 @@
             // создатьToolStripMenuItem
             // 
             создатьToolStripMenuItem.Name = "создатьToolStripMenuItem";
-            создатьToolStripMenuItem.Size = new Size(180, 22);
+            создатьToolStripMenuItem.Size = new Size(154, 22);
             создатьToolStripMenuItem.Text = "Создать";
             создатьToolStripMenuItem.Click += создатьToolStripMenuItem_Click;
             // 
             // открытьToolStripMenuItem
             // 
             открытьToolStripMenuItem.Name = "открытьToolStripMenuItem";
-            открытьToolStripMenuItem.Size = new Size(180, 22);
+            открытьToolStripMenuItem.Size = new Size(154, 22);
             открытьToolStripMenuItem.Text = "Открыть";
             открытьToolStripMenuItem.Click += открытьToolStripMenuItem_Click;
             // 
             // сохранитьToolStripMenuItem
             // 
             сохранитьToolStripMenuItem.Name = "сохранитьToolStripMenuItem";
-            сохранитьToolStripMenuItem.Size = new Size(180, 22);
+            сохранитьToolStripMenuItem.Size = new Size(154, 22);
             сохранитьToolStripMenuItem.Text = "Сохранить";
             сохранитьToolStripMenuItem.Click += сохранитьToolStripMenuItem_Click;
             // 
             // сохранитьКакToolStripMenuItem
             // 
             сохранитьКакToolStripMenuItem.Name = "сохранитьКакToolStripMenuItem";
-            сохранитьКакToolStripMenuItem.Size = new Size(180, 22);
+            сохранитьКакToolStripMenuItem.Size = new Size(154, 22);
             сохранитьКакToolStripMenuItem.Text = "Сохранить как";
             сохранитьКакToolStripMenuItem.Click += сохранитьКакToolStripMenuItem_Click;
             // 
             // выходToolStripMenuItem
             // 
             выходToolStripMenuItem.Name = "выходToolStripMenuItem";
-            выходToolStripMenuItem.Size = new Size(180, 22);
+            выходToolStripMenuItem.Size = new Size(154, 22);
             выходToolStripMenuItem.Text = "Выход";
             выходToolStripMenuItem.Click += выходToolStripMenuItem_Click;
             // 
@@ -260,14 +265,14 @@
             // вызовСправкиToolStripMenuItem
             // 
             вызовСправкиToolStripMenuItem.Name = "вызовСправкиToolStripMenuItem";
-            вызовСправкиToolStripMenuItem.Size = new Size(180, 22);
+            вызовСправкиToolStripMenuItem.Size = new Size(156, 22);
             вызовСправкиToolStripMenuItem.Text = "Вызов справки";
             вызовСправкиToolStripMenuItem.Click += вызовСправкиToolStripMenuItem_Click;
             // 
             // оПрограммеToolStripMenuItem
             // 
             оПрограммеToolStripMenuItem.Name = "оПрограммеToolStripMenuItem";
-            оПрограммеToolStripMenuItem.Size = new Size(180, 22);
+            оПрограммеToolStripMenuItem.Size = new Size(156, 22);
             оПрограммеToolStripMenuItem.Text = "О программе";
             оПрограммеToolStripMenuItem.Click += оПрограммеToolStripMenuItem_Click;
             // 
@@ -441,7 +446,7 @@
             // NiceWindow.Panel2
             // 
             NiceWindow.Panel2.AutoScroll = true;
-            NiceWindow.Panel2.Controls.Add(richTextBox2);
+            NiceWindow.Panel2.Controls.Add(dataGridView1);
             NiceWindow.Panel2.RightToLeft = RightToLeft.No;
             NiceWindow.Size = new Size(682, 395);
             NiceWindow.SplitterDistance = 196;
@@ -486,17 +491,40 @@
             richTextBox1.Text = "";
             richTextBox1.WordWrap = false;
             // 
-            // richTextBox2
+            // dataGridView1
             // 
-            richTextBox2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            richTextBox2.BackColor = SystemColors.ControlDark;
-            richTextBox2.Location = new Point(3, 3);
-            richTextBox2.Name = "richTextBox2";
-            richTextBox2.ReadOnly = true;
-            richTextBox2.Size = new Size(679, 189);
-            richTextBox2.TabIndex = 19;
-            richTextBox2.Text = "тестовый текст";
-            richTextBox2.WordWrap = false;
+            dataGridView1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dataGridView1.Columns.AddRange(new DataGridViewColumn[] { Code, Type, Value, Position });
+            dataGridView1.Location = new Point(3, 3);
+            dataGridView1.Name = "dataGridView1";
+            dataGridView1.RowHeadersWidth = 60;
+            dataGridView1.Size = new Size(676, 189);
+            dataGridView1.TabIndex = 22;
+            // 
+            // Code
+            // 
+            Code.HeaderText = "Код";
+            Code.Name = "Code";
+            Code.ReadOnly = true;
+            // 
+            // Type
+            // 
+            Type.HeaderText = "Тип";
+            Type.Name = "Type";
+            Type.ReadOnly = true;
+            // 
+            // Value
+            // 
+            Value.HeaderText = "Лексема";
+            Value.Name = "Value";
+            Value.ReadOnly = true;
+            // 
+            // Position
+            // 
+            Position.HeaderText = "Позиция";
+            Position.Name = "Position";
+            Position.ReadOnly = true;
             // 
             // statusStrip1
             // 
@@ -537,6 +565,7 @@
             splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
             splitContainer1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
             ResumeLayout(false);
@@ -586,12 +615,16 @@
         private ToolStripButton toolStripButtonAbout;
         private ToolStripMenuItem удалитьToolStripMenuItem;
         private SplitContainer NiceWindow;
-        private RichTextBox richTextBox2;
         private ToolStripComboBox toolStripFontSizeComboBox;
         private SplitContainer splitContainer1;
         private RichTextBox richTextBoxLineNumbers;
         private RichTextBox richTextBox1;
         private StatusStrip statusStrip1;
         private ToolStripStatusLabel toolStripStatusLabel1;
+        private DataGridView dataGridView1;
+        private DataGridViewTextBoxColumn Code;
+        private DataGridViewTextBoxColumn Type;
+        private DataGridViewTextBoxColumn Value;
+        private DataGridViewTextBoxColumn Position;
     }
 }
