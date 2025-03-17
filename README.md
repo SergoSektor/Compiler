@@ -35,3 +35,6 @@
   Выделяет весь текст или элемент в текущем окне или документе.  
 
 ---
+
+
+![Диаграмма сканера](https://github.com/user-attachments/assets/bc1ba0cb-119b-4fdd-af31-1c66ea73df20)
