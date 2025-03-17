@@ -36,5 +36,12 @@
 
 ---
 
+# Лабораторная работа 2  
+**Тема:** Разработка лексического анализатора (сканера)
+- Вариант 57. Комментарии языка PHP
+- Вводные данные: // Output "Hello GeeksforGeeks" 
+/* It will print the 
+   message   "Hello geeks" */
+---
 
 ![Диаграмма сканера](https://github.com/user-attachments/assets/bc1ba0cb-119b-4fdd-af31-1c66ea73df20)
