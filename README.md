@@ -52,5 +52,5 @@
 ![Диаграмма сканера](https://github.com/user-attachments/assets/bc1ba0cb-119b-4fdd-af31-1c66ea73df20)
 - рис.1 Диаграмма сканера
 
-![изображение](https://github.com/user-attachments/assets/4dae4448-f9d9-4dbd-9bf4-ce0abf997e99)
+![изображение](https://github.com/user-attachments/assets/c364ba1b-b267-4df1-b44c-252066e274c8)
 - рис.2 Работа сканера
