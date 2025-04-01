@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 
 namespace lab1_compiler.Bar
 {
@@ -14,12 +13,14 @@ namespace lab1_compiler.Bar
 
     internal class LexicalAnalyzer
     {
+        // Код токенов: 1 - начало однострочного комментария, 2 - начало многострочного комментария,
+        // 3 - конец многострочного комментария, 4 - текст комментария.
         private readonly Dictionary<string, int> _tokenTypes = new Dictionary<string, int>
         {
-            { "SingleLineComment", 1 },
+            { "SingleLineCommentStart", 1 },
             { "MultiLineCommentStart", 2 },
             { "MultiLineCommentEnd", 3 },
-            { "StringLiteral", 4 }
+            { "CommentText", 4 }
         };
 
         public List<LexicalToken> Tokens { get; } = new List<LexicalToken>();
@@ -30,122 +31,123 @@ namespace lab1_compiler.Bar
             Tokens.Clear();
             Errors.Clear();
 
-            bool inMultiLineComment = false;
-            int currentLine = 1;
-            // Паттерн ищет: однострочный комментарий, начало комментария, конец комментария, строковый литерал или прочую лексему.
-            string pattern = @"(//.*)|(/\*)|(\*/)|(""[^""]*"")|(\S+)";
+            int i = 0;
+            int line = 1;
+            int col = 1;
+            int length = text.Length;
 
-            string[] lines = text.Split('\n');
-
-            for (int i = 0; i < lines.Length; i++)
+            while (i < length)
             {
-                string line = lines[i];
-                int pos = 0;
+                char current = text[i];
 
-                while (pos < line.Length)
+                // Если встретили символ новой строки, обновляем line и col
+                if (current == '\n')
                 {
-                    // Если не получается найти совпадение, просто переходим к следующему символу
-                    Match match = Regex.Match(line.Substring(pos), pattern, RegexOptions.Compiled);
-                    if (!match.Success)
+                    line++;
+                    col = 1;
+                    i++;
+                    continue;
+                }
+
+                // Проверка на однострочный комментарий
+                if (current == '/' && (i + 1) < length && text[i + 1] == '/')
+                {
+                    int startLine = line, startCol = col;
+                    // Токен для начала однострочного комментария
+                    Tokens.Add(new LexicalToken
                     {
-                        pos++;
-                        continue;
+                        Code = _tokenTypes["SingleLineCommentStart"],
+                        Type = "Начало однострочного комментария",
+                        Value = "//",
+                        Position = $"Строка {startLine}, Позиция {startCol}"
+                    });
+                    i += 2;
+                    col += 2;
+                    int commentStart = i;
+                    // Считываем до конца строки или до конца файла
+                    while (i < length && text[i] != '\n')
+                    {
+                        i++;
+                        col++;
                     }
-
-                    string value = match.Value;
-                    int tokenCode = -1;
-                    string tokenType = "";
-
-                    // Если мы не внутри многострочного комментария
-                    if (!inMultiLineComment)
+                    string commentText = text.Substring(commentStart, i - commentStart).Trim();
+                    Tokens.Add(new LexicalToken
                     {
-                        if (match.Groups[1].Success)
+                        Code = _tokenTypes["CommentText"],
+                        Type = "Текст комментария",
+                        Value = commentText,
+                        Position = $"Строка {startLine}, Позиция {startCol + 2}"
+                    });
+                    continue;
+                }
+
+                // Проверка на многострочный комментарий
+                if (current == '/' && (i + 1) < length && text[i + 1] == '*')
+                {
+                    int startLine = line, startCol = col;
+                    // Токен для начала многострочного комментария
+                    Tokens.Add(new LexicalToken
+                    {
+                        Code = _tokenTypes["MultiLineCommentStart"],
+                        Type = "Начало многострочного комментария",
+                        Value = "/*",
+                        Position = $"Строка {startLine}, Позиция {startCol}"
+                    });
+                    i += 2;
+                    col += 2;
+                    int commentTextStart = i;
+                    bool endFound = false;
+                    // Считываем текст до появления "*/"
+                    while (i < length)
+                    {
+                        // Обработка новой строки
+                        if (text[i] == '\n')
                         {
-                            // Однострочный комментарий – сразу добавляем и завершаем анализ строки
-                            tokenCode = _tokenTypes["SingleLineComment"];
-                            tokenType = "Однострочный комментарий";
-                            Tokens.Add(new LexicalToken
-                            {
-                                Code = tokenCode,
-                                Type = tokenType,
-                                Value = value,
-                                Position = $"Строка {currentLine}, Позиция {pos + 1}"
-                            });
-                            break; // остальная часть строки считается комментарием
+                            line++;
+                            col = 1;
+                            i++;
+                            continue;
                         }
-                        else if (match.Groups[2].Success)
+                        // Если найден конец комментария
+                        if (text[i] == '*' && (i + 1) < length && text[i + 1] == '/')
                         {
-                            // Начало многострочного комментария
-                            tokenCode = _tokenTypes["MultiLineCommentStart"];
-                            tokenType = "Начало комментария";
-                            Tokens.Add(new LexicalToken
-                            {
-                                Code = tokenCode,
-                                Type = tokenType,
-                                Value = value,
-                                Position = $"Строка {currentLine}, Позиция {pos + 1}"
-                            });
-                            inMultiLineComment = true;
+                            endFound = true;
+                            break;
                         }
-                        else if (match.Groups[4].Success)
+                        i++;
+                        col++;
+                    }
+                    string multiCommentText = text.Substring(commentTextStart, i - commentTextStart).Trim();
+                    Tokens.Add(new LexicalToken
+                    {
+                        Code = _tokenTypes["CommentText"],
+                        Type = "Текст комментария",
+                        Value = multiCommentText,
+                        Position = $"Строка {startLine}, Позиция {startCol + 2}"
+                    });
+                    // Если конец найден, добавляем токен конца комментария
+                    if (endFound)
+                    {
+                        Tokens.Add(new LexicalToken
                         {
-                            // Строковый литерал вне комментария
-                            tokenCode = _tokenTypes["StringLiteral"];
-                            tokenType = "Строковый литерал";
-                            Tokens.Add(new LexicalToken
-                            {
-                                Code = tokenCode,
-                                Type = tokenType,
-                                Value = value,
-                                Position = $"Строка {currentLine}, Позиция {pos + 1}"
-                            });
-                        }
-                        else if (match.Groups[3].Success)
-                        {
-                            // Неожиданный маркер конца комментария вне многострочного комментария – ошибка
-                            Errors.Add($"Ошибка в строке {currentLine}, позиция {pos + 1}: Неожиданный маркер конца комментария");
-                        }
-                        else if (match.Groups[5].Success)
-                        {
-                            // Любая другая лексема вне комментария – считаем ошибкой, так как анализатор предназначен только для комментариев и строковых литералов
-                            Errors.Add($"Ошибка в строке {currentLine}, позиция {pos + 1}: Недопустимая лексема '{value}'");
-                        }
+                            Code = _tokenTypes["MultiLineCommentEnd"],
+                            Type = "Конец многострочного комментария",
+                            Value = "*/",
+                            Position = $"Строка {line}, Позиция {col}"
+                        });
+                        i += 2; // пропускаем "*/"
+                        col += 2;
                     }
                     else
                     {
-                        // Находимся внутри многострочного комментария:
-                        // Обрабатываем только маркер конца комментария и строковые литералы.
-                        if (match.Groups[3].Success)
-                        {
-                            tokenCode = _tokenTypes["MultiLineCommentEnd"];
-                            tokenType = "Конец комментария";
-                            Tokens.Add(new LexicalToken
-                            {
-                                Code = tokenCode,
-                                Type = tokenType,
-                                Value = value,
-                                Position = $"Строка {currentLine}, Позиция {pos + 1}"
-                            });
-                            inMultiLineComment = false;
-                        }
-                        else if (match.Groups[4].Success)
-                        {
-                            tokenCode = _tokenTypes["StringLiteral"];
-                            tokenType = "Строковый литерал";
-                            Tokens.Add(new LexicalToken
-                            {
-                                Code = tokenCode,
-                                Type = tokenType,
-                                Value = value,
-                                Position = $"Строка {currentLine}, Позиция {pos + 1}"
-                            });
-                        }
-                        // Остальные совпадения (например, группа 5) просто игнорируем внутри комментария
+                        Errors.Add($"Не найден конец многострочного комментария, начатого на строке {startLine}, позиция {startCol}");
                     }
-
-                    pos += match.Length;
+                    continue;
                 }
-                currentLine++;
+
+                // Если текущий символ не является началом комментария, просто пропускаем его
+                i++;
+                col++;
             }
         }
     }
