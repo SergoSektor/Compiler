@@ -478,8 +478,6 @@ namespace lab1_compiler
         }
 
 
-
-
         private int GetCharIndexFromLineAndPosition(RichTextBox rtb, int line, int position)
         {
             if (line < 0 || line >= rtb.Lines.Length) return -1;
