@@ -49,12 +49,20 @@ namespace lab1_compiler
 
         }
 
-        private void InitializeDataGridView()
+        private void InitializeDataGridViews()
         {
+            // Для dataGridView1
             dataGridView1.Columns.Add("Code", "Код");
             dataGridView1.Columns.Add("Type", "Тип");
             dataGridView1.Columns.Add("Value", "Лексема");
             dataGridView1.Columns.Add("Position", "Позиция");
+
+            // Для dataGridView2
+            dataGridView2.Columns.Add("Number", "№");
+            dataGridView2.Columns.Add("Message", "Ошибка");
+            dataGridView2.Columns.Add("Start", "Начало");
+            dataGridView2.Columns.Add("End", "Конец");
+            dataGridView2.Columns.Add("Expected", "Ожидалось");
         }
 
         private void SetDefaultStyle()
@@ -455,12 +463,9 @@ namespace lab1_compiler
 
         private void toolStripButtonPlay_Click(object sender, EventArgs e)
         {
+            // Лексический анализ
             _lexer.Analyze(richTextBox1.Text);
             dataGridView1.Rows.Clear();
-
-            // Сбрасываем форматирование
-            richTextBox1.SelectAll();
-            richTextBox1.SelectionColor = Color.Black;
 
             foreach (var token in _lexer.Tokens)
             {
@@ -472,28 +477,24 @@ namespace lab1_compiler
                 );
             }
 
-            richTextBox1.SelectAll();
-            richTextBox1.SelectionBackColor = richTextBox1.BackColor;
-            // Подсветка ошибок в richTextBox1
-            foreach (var error in _lexer.Errors.ToList())
+            // Синтаксический анализ (по тексту, не по токенам!)
+            var parser = new RawTextParser();
+            var errors = parser.Parse(richTextBox1.Text);
+
+            dataGridView2.Rows.Clear();
+            foreach (var error in errors)
             {
-                // Ищем позицию ошибки по сообщению вида "строке {line}, позиция {pos}: ..."
-                Match match = Regex.Match(error, @"строке (\d+), позиция (\d+)");
-                if (match.Success)
-                {
-                    int line = int.Parse(match.Groups[1].Value) - 1;
-                    int pos = int.Parse(match.Groups[2].Value) - 1;
-
-                    int startIndex = GetCharIndexFromLineAndPosition(richTextBox1, line, pos);
-                    if (startIndex != -1 && startIndex < richTextBox1.Text.Length)
-                    {
-                        richTextBox1.Select(startIndex, 1); // выделяем 1 символ
-                        richTextBox1.SelectionBackColor = Color.Red; // устанавливаем красный фон
-                    }
-                }
+                dataGridView2.Rows.Add(
+                    error.NumberOfError,
+                    error.Message,
+                    error.ExpectedToken,
+                    $"Строка {error.Line}, Позиция {error.Column}"
+                );
             }
-
         }
+
+
+
 
         private int GetCharIndexFromLineAndPosition(RichTextBox rtb, int line, int position)
         {

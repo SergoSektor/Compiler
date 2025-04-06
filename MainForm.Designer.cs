@@ -81,9 +81,13 @@
             Type = new DataGridViewTextBoxColumn();
             Value = new DataGridViewTextBoxColumn();
             Position = new DataGridViewTextBoxColumn();
+            dataGridView2 = new DataGridView();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
-            dataGridView2 = new DataGridView();
+            Number = new DataGridViewTextBoxColumn();
+            Message = new DataGridViewTextBoxColumn();
+            Expected = new DataGridViewTextBoxColumn();
+            Start = new DataGridViewTextBoxColumn();
             menuStrip2.SuspendLayout();
             toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)NiceWindow).BeginInit();
@@ -99,8 +103,8 @@
             splitContainer2.Panel2.SuspendLayout();
             splitContainer2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
-            statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridView2).BeginInit();
+            statusStrip1.SuspendLayout();
             SuspendLayout();
             // 
             // файлToolStripMenuItem
@@ -295,7 +299,7 @@
             menuStrip2.Items.AddRange(new ToolStripItem[] { файлToolStripMenuItem, правкаToolStripMenuItem, текстToolStripMenuItem, пускToolStripMenuItem, справкаToolStripMenuItem, локализацияToolStripMenuItem });
             menuStrip2.Location = new Point(0, 0);
             menuStrip2.Name = "menuStrip2";
-            menuStrip2.Size = new Size(706, 24);
+            menuStrip2.Size = new Size(927, 24);
             menuStrip2.TabIndex = 1;
             menuStrip2.Text = "menuStrip2";
             // 
@@ -305,7 +309,7 @@
             toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripButtonAdd, toolStripButtonOpen, toolStripButtonSave, toolStripButtonCancel, toolStripButtonRepeat, toolStripButtonCopy, toolStripButtonCut, toolStripButtonInsert, toolStripButtonPlay, toolStripButtonHelp, toolStripButtonAbout, toolStripFontSizeComboBox });
             toolStrip1.Location = new Point(0, 24);
             toolStrip1.Name = "toolStrip1";
-            toolStrip1.Size = new Size(706, 57);
+            toolStrip1.Size = new Size(927, 57);
             toolStrip1.TabIndex = 16;
             toolStrip1.Text = "toolStrip1";
             // 
@@ -455,7 +459,7 @@
             NiceWindow.Panel2.AutoScroll = true;
             NiceWindow.Panel2.Controls.Add(splitContainer2);
             NiceWindow.Panel2.RightToLeft = RightToLeft.No;
-            NiceWindow.Size = new Size(682, 431);
+            NiceWindow.Size = new Size(903, 431);
             NiceWindow.SplitterDistance = 213;
             NiceWindow.TabIndex = 19;
             // 
@@ -472,8 +476,8 @@
             // splitContainer1.Panel2
             // 
             splitContainer1.Panel2.Controls.Add(richTextBox1);
-            splitContainer1.Size = new Size(682, 213);
-            splitContainer1.SplitterDistance = 38;
+            splitContainer1.Size = new Size(903, 213);
+            splitContainer1.SplitterDistance = 45;
             splitContainer1.TabIndex = 0;
             // 
             // richTextBoxLineNumbers
@@ -483,7 +487,7 @@
             richTextBoxLineNumbers.Name = "richTextBoxLineNumbers";
             richTextBoxLineNumbers.ReadOnly = true;
             richTextBoxLineNumbers.ScrollBars = RichTextBoxScrollBars.None;
-            richTextBoxLineNumbers.Size = new Size(38, 207);
+            richTextBoxLineNumbers.Size = new Size(38, 320);
             richTextBoxLineNumbers.TabIndex = 0;
             richTextBoxLineNumbers.Text = "";
             // 
@@ -493,7 +497,7 @@
             richTextBox1.EnableAutoDragDrop = true;
             richTextBox1.Location = new Point(3, 3);
             richTextBox1.Name = "richTextBox1";
-            richTextBox1.Size = new Size(631, 207);
+            richTextBox1.Size = new Size(848, 207);
             richTextBox1.TabIndex = 25;
             richTextBox1.Text = "";
             richTextBox1.WordWrap = false;
@@ -511,8 +515,8 @@
             // splitContainer2.Panel2
             // 
             splitContainer2.Panel2.Controls.Add(dataGridView2);
-            splitContainer2.Size = new Size(676, 208);
-            splitContainer2.SplitterDistance = 324;
+            splitContainer2.Size = new Size(897, 208);
+            splitContainer2.SplitterDistance = 429;
             splitContainer2.TabIndex = 1;
             // 
             // dataGridView1
@@ -525,7 +529,7 @@
             dataGridView1.Location = new Point(3, 3);
             dataGridView1.Name = "dataGridView1";
             dataGridView1.RowHeadersWidth = 60;
-            dataGridView1.Size = new Size(318, 202);
+            dataGridView1.Size = new Size(423, 202);
             dataGridView1.TabIndex = 23;
             // 
             // Code
@@ -552,13 +556,25 @@
             Position.Name = "Position";
             Position.ReadOnly = true;
             // 
+            // dataGridView2
+            // 
+            dataGridView2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            dataGridView2.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dataGridView2.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+            dataGridView2.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dataGridView2.Columns.AddRange(new DataGridViewColumn[] { Number, Message, Expected, Start });
+            dataGridView2.Location = new Point(3, 3);
+            dataGridView2.Name = "dataGridView2";
+            dataGridView2.Size = new Size(458, 202);
+            dataGridView2.TabIndex = 22;
+            // 
             // statusStrip1
             // 
             statusStrip1.ImageScalingSize = new Size(20, 20);
             statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel1 });
             statusStrip1.Location = new Point(0, 518);
             statusStrip1.Name = "statusStrip1";
-            statusStrip1.Size = new Size(706, 22);
+            statusStrip1.Size = new Size(927, 22);
             statusStrip1.TabIndex = 20;
             statusStrip1.Text = "statusStrip1";
             // 
@@ -568,22 +584,31 @@
             toolStripStatusLabel1.Size = new Size(118, 17);
             toolStripStatusLabel1.Text = "toolStripStatusLabel1";
             // 
-            // dataGridView2
+            // Number
             // 
-            dataGridView2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            dataGridView2.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            dataGridView2.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
-            dataGridView2.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridView2.Location = new Point(3, 3);
-            dataGridView2.Name = "dataGridView2";
-            dataGridView2.Size = new Size(342, 202);
-            dataGridView2.TabIndex = 22;
+            Number.HeaderText = "№";
+            Number.Name = "Number";
+            // 
+            // Message
+            // 
+            Message.HeaderText = "Ошибка";
+            Message.Name = "Message";
+            // 
+            // Expected
+            // 
+            Expected.HeaderText = "Ожидалось";
+            Expected.Name = "Expected";
+            // 
+            // Start
+            // 
+            Start.HeaderText = "Позиция";
+            Start.Name = "Start";
             // 
             // Compiler
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(706, 540);
+            ClientSize = new Size(927, 540);
             Controls.Add(statusStrip1);
             Controls.Add(NiceWindow);
             Controls.Add(toolStrip1);
@@ -607,9 +632,9 @@
             ((System.ComponentModel.ISupportInitialize)splitContainer2).EndInit();
             splitContainer2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)dataGridView2).EndInit();
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)dataGridView2).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -670,5 +695,9 @@
         private DataGridViewTextBoxColumn Value;
         private DataGridViewTextBoxColumn Position;
         private DataGridView dataGridView2;
+        private DataGridViewTextBoxColumn Number;
+        private DataGridViewTextBoxColumn Message;
+        private DataGridViewTextBoxColumn Expected;
+        private DataGridViewTextBoxColumn Start;
     }
 }

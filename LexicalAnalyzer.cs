@@ -13,8 +13,11 @@ namespace lab1_compiler.Bar
 
     internal class LexicalAnalyzer
     {
-        // Код токенов: 1 - начало однострочного комментария, 2 - начало многострочного комментария,
-        // 3 - конец многострочного комментария, 4 - текст комментария.
+        // Код токенов:
+        // 1 - начало однострочного комментария,
+        // 2 - начало многострочного комментария,
+        // 3 - конец многострочного комментария,
+        // 4 - текст комментария.
         private readonly Dictionary<string, int> _tokenTypes = new Dictionary<string, int>
         {
             { "SingleLineCommentStart", 1 },
@@ -40,7 +43,7 @@ namespace lab1_compiler.Bar
             {
                 char current = text[i];
 
-                // Если встретили символ новой строки, обновляем line и col
+                // Обновляем line и col для новой строки
                 if (current == '\n')
                 {
                     line++;
@@ -49,11 +52,10 @@ namespace lab1_compiler.Bar
                     continue;
                 }
 
-                // Проверка на однострочный комментарий
+                // Обработка однострочного комментария: //
                 if (current == '/' && (i + 1) < length && text[i + 1] == '/')
                 {
                     int startLine = line, startCol = col;
-                    // Токен для начала однострочного комментария
                     Tokens.Add(new LexicalToken
                     {
                         Code = _tokenTypes["SingleLineCommentStart"],
@@ -64,7 +66,6 @@ namespace lab1_compiler.Bar
                     i += 2;
                     col += 2;
                     int commentStart = i;
-                    // Считываем до конца строки или до конца файла
                     while (i < length && text[i] != '\n')
                     {
                         i++;
@@ -81,11 +82,10 @@ namespace lab1_compiler.Bar
                     continue;
                 }
 
-                // Проверка на многострочный комментарий
+                // Обработка многострочного комментария: корректный случай "/*"
                 if (current == '/' && (i + 1) < length && text[i + 1] == '*')
                 {
                     int startLine = line, startCol = col;
-                    // Токен для начала многострочного комментария
                     Tokens.Add(new LexicalToken
                     {
                         Code = _tokenTypes["MultiLineCommentStart"],
@@ -97,10 +97,8 @@ namespace lab1_compiler.Bar
                     col += 2;
                     int commentTextStart = i;
                     bool endFound = false;
-                    // Считываем текст до появления "*/"
                     while (i < length)
                     {
-                        // Обработка новой строки
                         if (text[i] == '\n')
                         {
                             line++;
@@ -108,7 +106,7 @@ namespace lab1_compiler.Bar
                             i++;
                             continue;
                         }
-                        // Если найден конец комментария
+                        // Если найдено окончание комментария
                         if (text[i] == '*' && (i + 1) < length && text[i + 1] == '/')
                         {
                             endFound = true;
@@ -125,7 +123,6 @@ namespace lab1_compiler.Bar
                         Value = multiCommentText,
                         Position = $"Строка {startLine}, Позиция {startCol + 2}"
                     });
-                    // Если конец найден, добавляем токен конца комментария
                     if (endFound)
                     {
                         Tokens.Add(new LexicalToken
@@ -135,14 +132,31 @@ namespace lab1_compiler.Bar
                             Value = "*/",
                             Position = $"Строка {line}, Позиция {col}"
                         });
-                        i += 2; // пропускаем "*/"
+                        i += 2;
                         col += 2;
                     }
-                    
                     continue;
                 }
 
-                // Если текущий символ не является началом комментария, просто пропускаем его
+                
+
+                // Если встретился случай корректного закрытия комментария "*/" вне блока (например, когда комментарий не был открыт)
+                if (current == '*' && (i + 1) < length && text[i + 1] == '/')
+                {
+                    int startLine = line, startCol = col;
+                    Tokens.Add(new LexicalToken
+                    {
+                        Code = _tokenTypes["MultiLineCommentEnd"],
+                        Type = "Конец многострочного комментария",
+                        Value = "*/",
+                        Position = $"Строка {startLine}, Позиция {startCol}"
+                    });
+                    i += 2;
+                    col += 2;
+                    continue;
+                }
+
+                // Пропускаем остальные символы
                 i++;
                 col++;
             }
