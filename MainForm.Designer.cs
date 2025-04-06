@@ -75,6 +75,7 @@
             splitContainer1 = new SplitContainer();
             richTextBoxLineNumbers = new RichTextBox();
             richTextBox1 = new RichTextBox();
+            splitContainer2 = new SplitContainer();
             dataGridView1 = new DataGridView();
             Code = new DataGridViewTextBoxColumn();
             Type = new DataGridViewTextBoxColumn();
@@ -82,6 +83,7 @@
             Position = new DataGridViewTextBoxColumn();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
+            dataGridView2 = new DataGridView();
             menuStrip2.SuspendLayout();
             toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)NiceWindow).BeginInit();
@@ -92,8 +94,13 @@
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
             splitContainer1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)splitContainer2).BeginInit();
+            splitContainer2.Panel1.SuspendLayout();
+            splitContainer2.Panel2.SuspendLayout();
+            splitContainer2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             statusStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)dataGridView2).BeginInit();
             SuspendLayout();
             // 
             // файлToolStripMenuItem
@@ -446,10 +453,10 @@
             // NiceWindow.Panel2
             // 
             NiceWindow.Panel2.AutoScroll = true;
-            NiceWindow.Panel2.Controls.Add(dataGridView1);
+            NiceWindow.Panel2.Controls.Add(splitContainer2);
             NiceWindow.Panel2.RightToLeft = RightToLeft.No;
-            NiceWindow.Size = new Size(682, 395);
-            NiceWindow.SplitterDistance = 196;
+            NiceWindow.Size = new Size(682, 431);
+            NiceWindow.SplitterDistance = 213;
             NiceWindow.TabIndex = 19;
             // 
             // splitContainer1
@@ -465,7 +472,7 @@
             // splitContainer1.Panel2
             // 
             splitContainer1.Panel2.Controls.Add(richTextBox1);
-            splitContainer1.Size = new Size(682, 196);
+            splitContainer1.Size = new Size(682, 213);
             splitContainer1.SplitterDistance = 38;
             splitContainer1.TabIndex = 0;
             // 
@@ -476,7 +483,7 @@
             richTextBoxLineNumbers.Name = "richTextBoxLineNumbers";
             richTextBoxLineNumbers.ReadOnly = true;
             richTextBoxLineNumbers.ScrollBars = RichTextBoxScrollBars.None;
-            richTextBoxLineNumbers.Size = new Size(38, 190);
+            richTextBoxLineNumbers.Size = new Size(38, 207);
             richTextBoxLineNumbers.TabIndex = 0;
             richTextBoxLineNumbers.Text = "";
             // 
@@ -486,10 +493,27 @@
             richTextBox1.EnableAutoDragDrop = true;
             richTextBox1.Location = new Point(3, 3);
             richTextBox1.Name = "richTextBox1";
-            richTextBox1.Size = new Size(631, 190);
+            richTextBox1.Size = new Size(631, 207);
             richTextBox1.TabIndex = 25;
             richTextBox1.Text = "";
             richTextBox1.WordWrap = false;
+            // 
+            // splitContainer2
+            // 
+            splitContainer2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            splitContainer2.Location = new Point(3, 3);
+            splitContainer2.Name = "splitContainer2";
+            // 
+            // splitContainer2.Panel1
+            // 
+            splitContainer2.Panel1.Controls.Add(dataGridView1);
+            // 
+            // splitContainer2.Panel2
+            // 
+            splitContainer2.Panel2.Controls.Add(dataGridView2);
+            splitContainer2.Size = new Size(676, 208);
+            splitContainer2.SplitterDistance = 324;
+            splitContainer2.TabIndex = 1;
             // 
             // dataGridView1
             // 
@@ -501,8 +525,8 @@
             dataGridView1.Location = new Point(3, 3);
             dataGridView1.Name = "dataGridView1";
             dataGridView1.RowHeadersWidth = 60;
-            dataGridView1.Size = new Size(676, 189);
-            dataGridView1.TabIndex = 22;
+            dataGridView1.Size = new Size(318, 202);
+            dataGridView1.TabIndex = 23;
             // 
             // Code
             // 
@@ -544,6 +568,17 @@
             toolStripStatusLabel1.Size = new Size(118, 17);
             toolStripStatusLabel1.Text = "toolStripStatusLabel1";
             // 
+            // dataGridView2
+            // 
+            dataGridView2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            dataGridView2.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dataGridView2.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+            dataGridView2.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dataGridView2.Location = new Point(3, 3);
+            dataGridView2.Name = "dataGridView2";
+            dataGridView2.Size = new Size(342, 202);
+            dataGridView2.TabIndex = 22;
+            // 
             // Compiler
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -567,9 +602,14 @@
             splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
             splitContainer1.ResumeLayout(false);
+            splitContainer2.Panel1.ResumeLayout(false);
+            splitContainer2.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)splitContainer2).EndInit();
+            splitContainer2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)dataGridView2).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -623,10 +663,12 @@
         private RichTextBox richTextBox1;
         private StatusStrip statusStrip1;
         private ToolStripStatusLabel toolStripStatusLabel1;
+        private SplitContainer splitContainer2;
         private DataGridView dataGridView1;
         private DataGridViewTextBoxColumn Code;
         private DataGridViewTextBoxColumn Type;
         private DataGridViewTextBoxColumn Value;
         private DataGridViewTextBoxColumn Position;
+        private DataGridView dataGridView2;
     }
 }

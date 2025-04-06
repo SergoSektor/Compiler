@@ -138,10 +138,7 @@ namespace lab1_compiler.Bar
                         i += 2; // пропускаем "*/"
                         col += 2;
                     }
-                    else
-                    {
-                        Errors.Add($"Не найден конец многострочного комментария, начатого на строке {startLine}, позиция {startCol}");
-                    }
+                    
                     continue;
                 }
 
