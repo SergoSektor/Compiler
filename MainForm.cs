@@ -49,22 +49,6 @@ namespace lab1_compiler
 
         }
 
-        private void InitializeDataGridViews()
-        {
-            // Для dataGridView1
-            dataGridView1.Columns.Add("Code", "Код");
-            dataGridView1.Columns.Add("Type", "Тип");
-            dataGridView1.Columns.Add("Value", "Лексема");
-            dataGridView1.Columns.Add("Position", "Позиция");
-
-            // Для dataGridView2
-            dataGridView2.Columns.Add("Number", "№");
-            dataGridView2.Columns.Add("Message", "Ошибка");
-            dataGridView2.Columns.Add("Start", "Начало");
-            dataGridView2.Columns.Add("End", "Конец");
-            dataGridView2.Columns.Add("Expected", "Ожидалось");
-        }
-
         private void SetDefaultStyle()
         {
             // Устанавливает стиль по умолчанию для всего текста
