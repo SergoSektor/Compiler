@@ -17,23 +17,33 @@ namespace lab1_compiler.Bar
         private List<ParsingError> Errors = new List<ParsingError>();
         private int _errorNumber = 1;
 
+        /// <summary>
+        /// Анализирует текст с комментариями в стиле C/C++.
+        /// Однострочные комментарии начинаются с "//" – они просто пропускаются.
+        /// Многострочные комментарии начинаются с "/*" и заканчиваются на "*/".
+        /// Регистрируются ошибки:
+        ///  - Если однострочный комментарий начинается с одиночного '/'.
+        ///  - Если встречается закрытие многострочного комментария "*/" вне комментария,
+        ///    регистрируется ошибка с сообщением, что ожидалось начало комментария "/*"
+        ///    и позиция определяется как позиция предполагаемого открывающего токена (первый непробельный символ строки).
+        ///  - Если многострочный комментарий не закрыт (ожидалось "*/" в конце текста).
+        /// </summary>
         public List<ParsingError> Parse(string text)
         {
             Errors.Clear();
+            _errorNumber = 1;
 
             int i = 0;
             int line = 1;
             int col = 1;
             int length = text.Length;
-
-            // Стек для хранения позиций открывающих токенов "/*"
-            Stack<(int line, int col)> multiLineCommentStack = new();
+            bool insideMultiLine = false;
 
             while (i < length)
             {
                 char current = text[i];
-                char next = (i + 1 < length) ? text[i + 1] : '\0';
 
+                // Обработка перевода строки
                 if (current == '\n')
                 {
                     line++;
@@ -42,66 +52,113 @@ namespace lab1_compiler.Bar
                     continue;
                 }
 
-                // Обработка однострочного комментария: //
-                if (current == '/' && next == '/')
+                if (!insideMultiLine)
                 {
-                    i += 2;
-                    col += 2;
-                    while (i < length && text[i] != '\n')
+                    if (current == '/')
                     {
-                        i++;
-                        col++;
+                        if (i + 1 < length)
+                        {
+                            char next = text[i + 1];
+                            if (next == '/')
+                            {
+                                // Корректный однострочный комментарий "//"
+                                i += 2;
+                                col += 2;
+                                while (i < length && text[i] != '\n')
+                                {
+                                    i++;
+                                    col++;
+                                }
+                                continue;
+                            }
+                            else if (next == '*')
+                            {
+                                // Открытие многострочного комментария "/*"
+                                insideMultiLine = true;
+                                i += 2;
+                                col += 2;
+                                continue;
+                            }
+                            else
+                            {
+                                // Ошибка: одиночный слеш, ожидается "//"
+                                AddError("Ожидалось начало однострочного комментария \"//\"", "/", line, col);
+                                i++;
+                                col++;
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            AddError("Одиночный '/' не является началом комментария", "/", line, col);
+                            i++;
+                            col++;
+                            continue;
+                        }
                     }
-                    continue;
-                }
 
-                // Начало многострочного комментария: /*
-                if (current == '/' && next == '*')
-                {
-                    // Сохраняем позицию начала "/*"
-                    multiLineCommentStack.Push((line, col));
-                    i += 2;
-                    col += 2;
-                    continue;
-                }
-
-                // Конец многострочного комментария: */
-                if (current == '*' && next == '/')
-                {
-                    if (multiLineCommentStack.Count == 0)
+                    // Если вне многострочного комментария встречается "*/"
+                    if (current == '*' && i + 1 < length && text[i + 1] == '/')
                     {
-                        // Ошибка: закрывающий токен без соответствующего открытия
-                        AddError("Незакрытый закрывающий токен многострочного комментария", "/*", line, col);
+                        // Определяем позицию, где ожидалось открытие комментария "/*".
+                        // Для этого ищем первый непробельный символ текущей строки.
+                        int expectedCol = GetFirstNonWhitespaceColumn(text, i, col);
+                        AddError("Закрытие многострочного комментария без соответствующего открытия", "/*", line, expectedCol);
+                        i += 2;
+                        col += 2;
+                        continue;
                     }
-                    else
-                    {
-                        multiLineCommentStack.Pop();
-                    }
-                    i += 2;
-                    col += 2;
-                    continue;
                 }
-
-                // Обнаружен одиночный '/'
-                if (current == '/')
+                else
                 {
-                    AddError("Ожидалось //", "//", line, col);
-                    i++;
-                    col++;
-                    continue;
+                    // Находимся внутри многострочного комментария.
+                    if (current == '*' && i + 1 < length && text[i + 1] == '/')
+                    {
+                        insideMultiLine = false;
+                        i += 2;
+                        col += 2;
+                        continue;
+                    }
                 }
 
                 i++;
                 col++;
             }
 
-            // Для каждого оставшегося в стеке открывающего токена выводим ошибку
-            foreach (var (startLine, startCol) in multiLineCommentStack)
+            // Если текст закончился, а многострочный комментарий не закрыт
+            if (insideMultiLine)
             {
-                AddError("Незакрытый открывающий токен многострочного комментария", "*/", line, col);
+                // Ошибка в точке конца текста – здесь ожидался закрывающий токен "*/"
+                AddError("Незакрытый многострочный комментарий", "*/", line, col);
             }
 
             return Errors;
+        }
+
+        /// <summary>
+        /// Ищет в текущей строке первый непробельный символ.
+        /// Если не найден, возвращает 1.
+        /// </summary>
+        private int GetFirstNonWhitespaceColumn(string text, int currentIndex, int currentCol)
+        {
+            // Ищем начало строки
+            int index = currentIndex;
+            while (index > 0 && text[index - 1] != '\n')
+            {
+                index--;
+            }
+            // Теперь index – начало текущей строки; вычисляем колонку первого непробельного символа
+            int col = 1;
+            while (index < text.Length && text[index] != '\n')
+            {
+                if (!Char.IsWhiteSpace(text[index]))
+                {
+                    return col;
+                }
+                index++;
+                col++;
+            }
+            return 1;
         }
 
         private void AddError(string message, string expected, int line, int col)
