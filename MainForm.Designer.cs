@@ -82,12 +82,13 @@
             Value = new DataGridViewTextBoxColumn();
             Position = new DataGridViewTextBoxColumn();
             dataGridView2 = new DataGridView();
-            statusStrip1 = new StatusStrip();
-            toolStripStatusLabel1 = new ToolStripStatusLabel();
             Number = new DataGridViewTextBoxColumn();
             Message = new DataGridViewTextBoxColumn();
             Expected = new DataGridViewTextBoxColumn();
             Start = new DataGridViewTextBoxColumn();
+            statusStrip1 = new StatusStrip();
+            toolStripStatusLabel1 = new ToolStripStatusLabel();
+            нейтрализацияОшибокToolStripMenuItem = new ToolStripMenuItem();
             menuStrip2.SuspendLayout();
             toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)NiceWindow).BeginInit();
@@ -296,7 +297,7 @@
             // menuStrip2
             // 
             menuStrip2.ImageScalingSize = new Size(20, 20);
-            menuStrip2.Items.AddRange(new ToolStripItem[] { файлToolStripMenuItem, правкаToolStripMenuItem, текстToolStripMenuItem, пускToolStripMenuItem, справкаToolStripMenuItem, локализацияToolStripMenuItem });
+            menuStrip2.Items.AddRange(new ToolStripItem[] { файлToolStripMenuItem, правкаToolStripMenuItem, текстToolStripMenuItem, пускToolStripMenuItem, справкаToolStripMenuItem, локализацияToolStripMenuItem, нейтрализацияОшибокToolStripMenuItem });
             menuStrip2.Location = new Point(0, 0);
             menuStrip2.Name = "menuStrip2";
             menuStrip2.Size = new Size(927, 24);
@@ -568,22 +569,6 @@
             dataGridView2.Size = new Size(458, 202);
             dataGridView2.TabIndex = 22;
             // 
-            // statusStrip1
-            // 
-            statusStrip1.ImageScalingSize = new Size(20, 20);
-            statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel1 });
-            statusStrip1.Location = new Point(0, 518);
-            statusStrip1.Name = "statusStrip1";
-            statusStrip1.Size = new Size(927, 22);
-            statusStrip1.TabIndex = 20;
-            statusStrip1.Text = "statusStrip1";
-            // 
-            // toolStripStatusLabel1
-            // 
-            toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            toolStripStatusLabel1.Size = new Size(118, 17);
-            toolStripStatusLabel1.Text = "toolStripStatusLabel1";
-            // 
             // Number
             // 
             Number.HeaderText = "№";
@@ -603,6 +588,29 @@
             // 
             Start.HeaderText = "Позиция";
             Start.Name = "Start";
+            // 
+            // statusStrip1
+            // 
+            statusStrip1.ImageScalingSize = new Size(20, 20);
+            statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel1 });
+            statusStrip1.Location = new Point(0, 518);
+            statusStrip1.Name = "statusStrip1";
+            statusStrip1.Size = new Size(927, 22);
+            statusStrip1.TabIndex = 20;
+            statusStrip1.Text = "statusStrip1";
+            // 
+            // toolStripStatusLabel1
+            // 
+            toolStripStatusLabel1.Name = "toolStripStatusLabel1";
+            toolStripStatusLabel1.Size = new Size(118, 17);
+            toolStripStatusLabel1.Text = "toolStripStatusLabel1";
+            // 
+            // нейтрализацияОшибокToolStripMenuItem
+            // 
+            нейтрализацияОшибокToolStripMenuItem.Name = "нейтрализацияОшибокToolStripMenuItem";
+            нейтрализацияОшибокToolStripMenuItem.Size = new Size(152, 20);
+            нейтрализацияОшибокToolStripMenuItem.Text = "Нейтрализация ошибок";
+            нейтрализацияОшибокToolStripMenuItem.Click += нейтрализацияОшибокToolStripMenuItem_Click;
             // 
             // Compiler
             // 
@@ -699,5 +707,6 @@
         private DataGridViewTextBoxColumn Message;
         private DataGridViewTextBoxColumn Expected;
         private DataGridViewTextBoxColumn Start;
+        private ToolStripMenuItem нейтрализацияОшибокToolStripMenuItem;
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace lab1_compiler.Bar
 {
@@ -16,151 +17,124 @@ namespace lab1_compiler.Bar
     {
         private List<ParsingError> Errors = new List<ParsingError>();
         private int _errorNumber = 1;
+        private string _correctedText = string.Empty;
 
         /// <summary>
-        /// Анализирует текст с комментариями в стиле C/C++.
-        /// Однострочные комментарии начинаются с "//" – они просто пропускаются.
-        /// Многострочные комментарии начинаются с "/*" и заканчиваются на "*/".
-        /// Регистрируются ошибки:
-        ///  - Если однострочный комментарий начинается с одиночного '/'.
-        ///  - Если встречается закрытие многострочного комментария "*/" вне комментария,
-        ///    регистрируется ошибка с сообщением, что ожидалось начало комментария "/*"
-        ///    и позиция определяется как позиция предполагаемого открывающего токена (первый непробельный символ строки).
-        ///  - Если многострочный комментарий не закрыт (ожидалось "*/" в конце текста).
+        /// Сбрасывает состояние парсера и подготавливает его для нового анализа
         /// </summary>
-        public List<ParsingError> Parse(string text)
+        public void AutoCorrectErrors()
         {
             Errors.Clear();
             _errorNumber = 1;
-
-            int i = 0;
-            int line = 1;
-            int col = 1;
-            int length = text.Length;
-            bool insideMultiLine = false;
-
-            while (i < length)
-            {
-                char current = text[i];
-
-                // Обработка перевода строки
-                if (current == '\n')
-                {
-                    line++;
-                    col = 1;
-                    i++;
-                    continue;
-                }
-
-                if (!insideMultiLine)
-                {
-                    if (current == '/')
-                    {
-                        if (i + 1 < length)
-                        {
-                            char next = text[i + 1];
-                            if (next == '/')
-                            {
-                                // Корректный однострочный комментарий "//"
-                                i += 2;
-                                col += 2;
-                                while (i < length && text[i] != '\n')
-                                {
-                                    i++;
-                                    col++;
-                                }
-                                continue;
-                            }
-                            else if (next == '*')
-                            {
-                                // Открытие многострочного комментария "/*"
-                                insideMultiLine = true;
-                                i += 2;
-                                col += 2;
-                                continue;
-                            }
-                            else
-                            {
-                                // Ошибка: одиночный слеш, ожидается "//"
-                                AddError("Ожидалось начало однострочного комментария \"//\"", "/", line, col);
-                                i++;
-                                col++;
-                                continue;
-                            }
-                        }
-                        else
-                        {
-                            AddError("Одиночный '/' не является началом комментария", "/", line, col);
-                            i++;
-                            col++;
-                            continue;
-                        }
-                    }
-
-                    // Если вне многострочного комментария встречается "*/"
-                    if (current == '*' && i + 1 < length && text[i + 1] == '/')
-                    {
-                        // Определяем позицию, где ожидалось открытие комментария "/*".
-                        // Для этого ищем первый непробельный символ текущей строки.
-                        int expectedCol = GetFirstNonWhitespaceColumn(text, i, col);
-                        AddError("Закрытие многострочного комментария без соответствующего открытия", "/*", line, expectedCol);
-                        i += 2;
-                        col += 2;
-                        continue;
-                    }
-                }
-                else
-                {
-                    // Находимся внутри многострочного комментария.
-                    if (current == '*' && i + 1 < length && text[i + 1] == '/')
-                    {
-                        insideMultiLine = false;
-                        i += 2;
-                        col += 2;
-                        continue;
-                    }
-                }
-
-                i++;
-                col++;
-            }
-
-            // Если текст закончился, а многострочный комментарий не закрыт
-            if (insideMultiLine)
-            {
-                // Ошибка в точке конца текста – здесь ожидался закрывающий токен "*/"
-                AddError("Незакрытый многострочный комментарий", "*/", line, col);
-            }
-
-            return Errors;
+            _correctedText = string.Empty;
         }
 
         /// <summary>
-        /// Ищет в текущей строке первый непробельный символ.
-        /// Если не найден, возвращает 1.
+        /// Возвращает текст после последней коррекции
         /// </summary>
-        private int GetFirstNonWhitespaceColumn(string text, int currentIndex, int currentCol)
+        public string GetCorrectedText() => _correctedText;
+
+        /// <summary>
+        /// Анализирует текст построчно и исправляет ошибки:
+        /// - Если строка начинается с "/" (но не с "//" или "/*"), то заменяет её на "//" или "/*" в зависимости от наличия признаков многострочного комментария.
+        /// - Если строка начинается с "*" – добавляет отсутствующий "/" в начале и, если нужно, закрывающий "*/" в конце.
+        /// - Если строка начинается с "/*", но не заканчивается на "*/", добавляет закрывающий токен.
+        /// - Если строка начинается с "<?php", коррекция не производится (PHP-выражения).
+        /// </summary>
+        public List<ParsingError> ParseWithRecovery(string text)
         {
-            // Ищем начало строки
-            int index = currentIndex;
-            while (index > 0 && text[index - 1] != '\n')
+            AutoCorrectErrors();
+            var lines = text.Split('\n');
+            StringBuilder sb = new StringBuilder();
+            int lineNumber = 0;
+
+            foreach (var line in lines)
             {
-                index--;
-            }
-            // Теперь index – начало текущей строки; вычисляем колонку первого непробельного символа
-            int col = 1;
-            while (index < text.Length && text[index] != '\n')
-            {
-                if (!Char.IsWhiteSpace(text[index]))
+                lineNumber++;
+                string correctedLine = line;
+                // Определяем позицию первого непробельного символа для отчёта об ошибке
+                int firstNonWhitespace = line.Length - line.TrimStart().Length;
+                int col = firstNonWhitespace + 1;
+                string trimmed = line.TrimStart();
+
+                // Если строка начинается с PHP-тега, пропускаем коррекцию
+                if (trimmed.StartsWith("<?php"))
                 {
-                    return col;
+                    sb.AppendLine(line);
+                    continue;
                 }
-                index++;
-                col++;
+
+                // Если строка уже начинается с корректного однострочного комментария, оставляем её
+                if (trimmed.StartsWith("//"))
+                {
+                    sb.AppendLine(line);
+                    continue;
+                }
+                // Если строка начинается с корректного многострочного комментария
+                else if (trimmed.StartsWith("/*"))
+                {
+                    if (!trimmed.EndsWith("*/"))
+                    {
+                        // Ошибка: незакрытый многострочный комментарий
+                        AddError("Незакрытый многострочный комментарий", "*/", lineNumber, line.Length);
+                        correctedLine = line + "*/";
+                    }
+                }
+                // Если строка начинается с "/" но не с "//" или "/*"
+                else if (trimmed.StartsWith("/"))
+                {
+                    // Если строка, вероятно, задумывалась как многострочный комментарий (например, заканчивается на "*" или содержит "*" ближе к концу)
+                    if (trimmed.EndsWith("*") || trimmed.Contains(" *"))
+                    {
+                        AddError("Некорректный символ '/'", "// или /*", lineNumber, col);
+                        // Заменяем первый символ на "/*"
+                        correctedLine = line.Substring(0, firstNonWhitespace) + "/*" + line.Substring(firstNonWhitespace + 1);
+                        // Если в строке отсутствует закрывающий токен, добавляем его
+                        if (!correctedLine.TrimEnd().EndsWith("*/"))
+                        {
+                            correctedLine = TrimEndEndAsterisk(correctedLine) + "*/";
+                        }
+                    }
+                    else
+                    {
+                        // Если строка задумывалась как однострочный комментарий
+                        AddError("Некорректный символ '/'", "// или /*", lineNumber, col);
+                        correctedLine = line.Substring(0, firstNonWhitespace) + "//" + line.Substring(firstNonWhitespace + 1);
+                    }
+                }
+                // Если строка начинается с "*", но без открывающего комментария
+                else if (trimmed.StartsWith("*"))
+                {
+                    AddError("Закрытие комментария без открытия", "/*", lineNumber, col);
+                    correctedLine = line.Substring(0, firstNonWhitespace) + "/*" + line.Substring(firstNonWhitespace + 1);
+                    if (!correctedLine.TrimEnd().EndsWith("*/"))
+                    {
+                        correctedLine = TrimEndEndAsterisk(correctedLine) + "*/";
+                    }
+                }
+                // Иначе оставляем строку без изменений
+
+                sb.AppendLine(correctedLine);
             }
-            return 1;
+
+            _correctedText = sb.ToString();
+            return Errors;
         }
 
+        private string TrimEndEndAsterisk(string line)
+        {
+            string trimmed = line.TrimEnd();
+            if (trimmed.EndsWith("*") && !trimmed.EndsWith("*/"))
+            {
+                return trimmed.Substring(0, trimmed.Length - 1);
+            }
+            return trimmed;
+        }
+
+
+        /// <summary>
+        /// Добавляет ошибку в коллекцию
+        /// </summary>
         private void AddError(string message, string expected, int line, int col)
         {
             Errors.Add(new ParsingError

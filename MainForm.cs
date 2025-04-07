@@ -12,9 +12,9 @@ namespace lab1_compiler
 
     public partial class Compiler : Form
     {
-        
-        private readonly List<float> _defaultFontSizes = new List<float> { 8, 9, 10,11, 12, 14, 16, 18, 20,24 };
 
+        private readonly List<float> _defaultFontSizes = new List<float> { 8, 9, 10, 11, 12, 14, 16, 18, 20, 24 };
+        private RawTextParser _recoveryParser = new RawTextParser();
         private readonly LexicalAnalyzer _lexer = new LexicalAnalyzer();
 
         /// Берём функции для элементов меню
@@ -51,10 +51,9 @@ namespace lab1_compiler
 
         private void SetDefaultStyle()
         {
-            // Устанавливает стиль по умолчанию для всего текста
             richTextBox1.SelectAll();
             richTextBox1.SelectionColor = Color.Black;
-            richTextBox1.SelectionFont = new Font("Consolas", 10, FontStyle.Regular);
+            richTextBox1.SelectionBackColor = Color.White;
             richTextBox1.DeselectAll();
         }
 
@@ -445,26 +444,20 @@ namespace lab1_compiler
         /// Запуск ПОКА ОСТАВИТЬ
         /// </summary>
 
+        // Основной обработчик кнопки "Play"
         private void toolStripButtonPlay_Click(object sender, EventArgs e)
         {
             // Лексический анализ
             _lexer.Analyze(richTextBox1.Text);
             dataGridView1.Rows.Clear();
-
             foreach (var token in _lexer.Tokens)
             {
-                dataGridView1.Rows.Add(
-                    token.Code,
-                    token.Type,
-                    token.Value,
-                    token.Position
-                );
+                dataGridView1.Rows.Add(token.Code, token.Type, token.Value, token.Position);
             }
 
             // Синтаксический анализ (по тексту, не по токенам!)
             var parser = new RawTextParser();
-            var errors = parser.Parse(richTextBox1.Text);
-
+            var errors = parser.ParseWithRecovery(richTextBox1.Text);
             dataGridView2.Rows.Clear();
             foreach (var error in errors)
             {
@@ -475,6 +468,126 @@ namespace lab1_compiler
                     $"Строка {error.Line}, Позиция {error.Column}"
                 );
             }
+
+            // Сначала сбросим стиль (чтобы убрать предыдущую подсветку)
+            SetDefaultStyle();
+            // Подсветка комментариев (зелёным)
+            HighlightCommentsInRichTextBox(richTextBox1);
+            // Подсветка ошибок (розовым)
+            HighlightErrorsInRichTextBox(richTextBox1, errors);
+        }
+
+        private void нейтрализацияОшибокToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Исправляем текст и получаем ошибки исходного текста
+            _recoveryParser.AutoCorrectErrors();
+            string originalText = richTextBox1.Text;
+            var errors = _recoveryParser.ParseWithRecovery(originalText);
+            string correctedText = _recoveryParser.GetCorrectedText();
+
+            // Обновляем текст
+            richTextBox1.Text = correctedText;
+
+            // Пересчитываем ошибки для исправленного текста
+            _recoveryParser.AutoCorrectErrors();
+            var correctedErrors = _recoveryParser.ParseWithRecovery(correctedText);
+
+            // Обновляем таблицу ошибок
+            dataGridView2.Rows.Clear();
+            foreach (var error in correctedErrors)
+            {
+                dataGridView2.Rows.Add(
+                    error.NumberOfError,
+                    error.Message,
+                    error.ExpectedToken,
+                    $"Строка {error.Line}, Позиция {error.Column}"
+                );
+            }
+
+            // Обновляем подсветку
+            SetDefaultStyle();
+            HighlightCommentsInRichTextBox(richTextBox1);
+            HighlightErrorsInRichTextBox(richTextBox1, correctedErrors);
+        }
+
+
+
+        /// <summary>
+        /// Преобразует номер строки и столбца (начиная с 1) в индекс символа в строке.
+        /// </summary>
+        private int GetCharIndexFromLineAndColumn(string text, int line, int col)
+        {
+            string[] lines = text.Split('\n');
+            int index = 0;
+            for (int i = 0; i < line - 1 && i < lines.Length; i++)
+            {
+                index += lines[i].Length + 1;
+            }
+            index += (col - 1);
+            return index;
+        }
+
+        /// <summary>
+        /// Подсвечивает фрагменты, где обнаружены ошибки.
+        /// Длина выделения определяется как длина ожидаемого токена (error.ExpectedToken.Length).
+        /// </summary>
+        private void HighlightErrorsInRichTextBox(RichTextBox richTextBox, List<ParsingError> errors)
+        {
+            foreach (var error in errors)
+            {
+                int startIndex = GetCharIndexFromLineAndColumn(richTextBox.Text, error.Line, error.Column);
+                int length = error.ExpectedToken.Length;
+                if (startIndex + length > richTextBox.Text.Length)
+                    length = richTextBox.Text.Length - startIndex;
+                richTextBox.Select(startIndex, length);
+                richTextBox.SelectionBackColor = Color.LightPink;
+            }
+            richTextBox.DeselectAll();
+        }
+
+        /// <summary>
+        /// Подсвечивает комментарии в richTextBox зеленым фоном.
+        /// Для однострочных комментариев используется шаблон: "#" и все до конца строки.
+        /// Для многострочных комментариев – шаблон для тройных кавычек (''' или """).
+        /// </summary>
+
+        private void HighlightCommentsInRichTextBox(RichTextBox richTextBox)
+        {
+            int selStart = richTextBox.SelectionStart;
+            int selLength = richTextBox.SelectionLength;
+
+            // Сброс цвета текста
+            richTextBox.SelectAll();
+            richTextBox.SelectionColor = Color.Black;
+            richTextBox.DeselectAll();
+
+            // Однострочные комментарии (//)
+            string singleLinePattern = @"//.*";
+            foreach (Match match in Regex.Matches(richTextBox.Text, singleLinePattern))
+            {
+                richTextBox.Select(match.Index, match.Length);
+                richTextBox.SelectionColor = Color.Green;
+            }
+
+            // Многострочные комментарии (/* */)
+            string multiLinePattern = @"/\*[\s\S]*?\*/";
+            foreach (Match match in Regex.Matches(richTextBox.Text, multiLinePattern))
+            {
+                richTextBox.Select(match.Index, match.Length);
+                richTextBox.SelectionColor = Color.Green;
+            }
+
+            richTextBox.Select(selStart, selLength);
+            richTextBox.Focus();
+        }
+
+        // Метод для применения синтаксической подсветки (вызывается при изменении текста)
+        private void ApplySyntaxHighlighting()
+        {
+            // Сброс стилей
+            SetDefaultStyle();
+            // Подсвечиваем комментарии (текст зеленый, фон стандартный)
+            HighlightCommentsInRichTextBox(richTextBox1);
         }
 
 
@@ -503,5 +616,7 @@ namespace lab1_compiler
         {
             _refManager.ShowAbout();
         }
+
+        
     }
 }
