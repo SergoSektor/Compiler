@@ -72,46 +72,45 @@
 -    Если анализируемая строка содержит ошибки, то выводятся сообщения о них, неверный фрагмент (символ) и его местоположение.
 -    В окне вывода результатов выводится количество ошибок.
 ### **Грамматика:**
-G[PHP_Comments] = (Vt, Vn, P, S)
+- G[PHP_Comments_FA] = (Vt, Vn, P, S)
 
-Vt = {
-  '/' , '*', '#', '\n', symbol
-}
+- Vt = {
+-  '/', '*', '#', ␤, c                                 
+- }
 
-— symbol  — любой печатаемый символ, кроме '/', '*', '#' и перевода строки.
+- Vn = {
+-  q0, q1, qSL, qML, qStar, qa
+- }
 
-Vn = {
-  S, Comment, SL, ML, SLBody, MLBody
-}
+- S = q0
 
-P = {
-  S         → Comment
+- P = {
+-  q0     → '/' q1
+-         | '#' qSL          
 
-  Comment   → SL
-             | ML
+-  q1     → '/' qSL          
+-         | '*' qML          
 
-  SL        → '//' SLBody '\n'
-             | '#'  SLBody '\n'
+-  // Однострочный комментарий:
+-  qSL    → c qSL            
+-         | ␤ qa             
 
-  SLBody    → ( symbol
-              | '/'
-              | '*' 
-             ) SLBody
-             | ε
+-  // Многострочный комментарий:
+-  qML    → c qML            
+-         | '*' qStar        
 
-  ML        → '/*' MLBody '*/'
+-  qStar  → '*' qStar       
+-         | c qML            
+-         | '/' qa           
 
-  MLBody    → ( symbol
-              | '/'
-              | '*' 
-             ) MLBody
-             | ε
-}
+-  qa     → ε                
+-}
+
 
 ### **Классификация грамматики:**
  Согласно классификации Хомского, грамматика G[Z] является полностью автоматной.
 ### **Граф конечного автомата**
-![изображение](https://github.com/user-attachments/assets/8932126c-3cca-48b8-929c-721ad9bbeb91)
+![grapfauto](https://github.com/user-attachments/assets/a0558e6f-90e5-4f9b-9a92-8ca49bc40f79)
 - рис.3 Граф конечного автомата
 ![изображение](https://github.com/user-attachments/assets/d561e486-8e3d-4ad0-a898-0be86602f425)
 - рис.4 Работа парсера
