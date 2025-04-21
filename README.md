@@ -74,26 +74,26 @@
 ### **Грамматика:**
 - G[PHP_Comments_FA] = (Vt, Vn, P, S)
 - Vt = {
--  '/', '*', '#', ␤, c                                 
+-  /, *, #, ␤, c                                 
 - }
 - Vn = {
 -  q0, q1, qSL, qML, qStar, qa
 - }
 - S = q0
 - P = {
--  q0     → '/' q1
--         | '#' qSL          
--  q1     → '/' qSL          
--         | '*' qML          
+-  q0     → / q1
+-         | # qSL          
+-  q1     → / qSL          
+-         | * qML          
 -  // Однострочный комментарий:
 -  qSL    → c qSL            
 -         | ␤ qa             
 -  // Многострочный комментарий:
 -  qML    → c qML            
--         | '*' qStar        
--  q*  → '*' q*      
+-         | * qStar        
+-  q*  → * q*      
 -         | c qML            
--         | '/' qa           
+-         | / qa           
 -  qa     → ε                
 -}
 
