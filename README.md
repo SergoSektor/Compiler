@@ -77,7 +77,7 @@
 -  /, *, #, ␤, c                                 
 - }
 - Vn = {
--  q0, q1, qSL, qML, qStar, qa
+-  q0, q1, qSL, qML, q*, qa
 - }
 - S = q0
 - P = {
