@@ -1,9 +1,11 @@
-using System;
+п»їusing System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using lab1_compiler.Bar;
+using System.Text;
 
 
 
@@ -12,50 +14,52 @@ namespace lab1_compiler
 
     public partial class Compiler : Form
     {
-
+        private bool _exitHandled = false;
         private readonly List<float> _defaultFontSizes = new List<float> { 8, 9, 10, 11, 12, 14, 16, 18, 20, 24 };
-        private RawTextParser _recoveryParser = new RawTextParser();
         private readonly LexicalAnalyzer _lexer = new LexicalAnalyzer();
 
-        /// Берём функции для элементов меню
+        /// Р‘РµСЂС‘Рј С„СѓРЅРєС†РёРё РґР»СЏ СЌР»РµРјРµРЅС‚РѕРІ РјРµРЅСЋ
         private readonly FileManager _fileHandler;
         private readonly CorManager _corManager;
         private readonly RefManager _refManager;
 
-        /// Ссылки на справочное руководство
+        /// РЎСЃС‹Р»РєРё РЅР° СЃРїСЂР°РІРѕС‡РЅРѕРµ СЂСѓРєРѕРІРѕРґСЃС‚РІРѕ
         private const string _aboutPath = @"Resources\About.html";
         private const string _helpPath = @"Resources\Help.html";
+        private const string _taskPath = @"Resources\Task.html";
+        private const string _grammaryPath = @"Resources\Grammary.html";
+        private const string _cgrammaryPath = @"Resources\CGrammary.html";
+        private const string _manalysisPath = @"Resources\MAnalysis.html";
+        private const string _diagErrPath = @"Resources\DiagErr.html";
+        private const string _testPath = @"Resources\Test.html";
+        private const string _listLibraryPath = @"Resources\ListLibrary.html";
+        private const string _codePath = @"Resources\Code.html";
 
         public Compiler()
         {
             InitializeComponent();
             InitializeFontSizeComboBox();
+            this.FormClosing += Form1_FormClosing;
+
             _fileHandler = new FileManager(this);
             _corManager = new CorManager(richTextBox1);
-            _refManager = new RefManager(_helpPath, _aboutPath);
+            _refManager = new RefManager(_helpPath, _aboutPath, _taskPath, _grammaryPath, _cgrammaryPath, _manalysisPath, _diagErrPath, _testPath, _listLibraryPath, _codePath);
 
-            // Установка минимального размера (ширина, высота)
+            // РЈСЃС‚Р°РЅРѕРІРєР° РјРёРЅРёРјР°Р»СЊРЅРѕРіРѕ СЂР°Р·РјРµСЂР° (С€РёСЂРёРЅР°, РІС‹СЃРѕС‚Р°)
             this.MinimumSize = new Size(450, 300);
 
-            // Изменили данные в окне ввода
+            // РР·РјРµРЅРёР»Рё РґР°РЅРЅС‹Рµ РІ РѕРєРЅРµ РІРІРѕРґР°
             richTextBox1.DragEnter += RichTextBox_DragEnter;
             richTextBox1.DragDrop += RichTextBox_DragDrop;
 
             richTextBox1.TextChanged += RichTextBox_TextChanged;
             richTextBox1.VScroll += RichTextBox_VScroll;
 
-            toolStripStatusLabel1.Text = "Compiler успешно запущена";
+            toolStripStatusLabel1.Text = "Compiler СѓСЃРїРµС€РЅРѕ Р·Р°РїСѓС‰РµРЅР°";
             richTextBox1.TextChanged += RichTextBox1_TextChanged;
 
         }
 
-        private void SetDefaultStyle()
-        {
-            richTextBox1.SelectAll();
-            richTextBox1.SelectionColor = Color.Black;
-            richTextBox1.SelectionBackColor = Color.White;
-            richTextBox1.DeselectAll();
-        }
 
         private void HighlightMatches(string pattern, Color color, FontStyle style)
         {
@@ -68,37 +72,37 @@ namespace lab1_compiler
         }
 
 
-        /// статусная строка
+        /// СЃС‚Р°С‚СѓСЃРЅР°СЏ СЃС‚СЂРѕРєР°
         private void RichTextBox1_TextChanged(object sender, EventArgs e)
         {
-            // Запускаем лексический анализатор при изменении текста
+            // Р—Р°РїСѓСЃРєР°РµРј Р»РµРєСЃРёС‡РµСЃРєРёР№ Р°РЅР°Р»РёР·Р°С‚РѕСЂ РїСЂРё РёР·РјРµРЅРµРЅРёРё С‚РµРєСЃС‚Р°
             _lexer.Analyze(richTextBox1.Text);
 
             int tokenCount = _lexer.Tokens.Count;
             int errorCount = _lexer.Errors.Count;
 
-            // Формируем сообщение в зависимости от результатов сканирования
+            // Р¤РѕСЂРјРёСЂСѓРµРј СЃРѕРѕР±С‰РµРЅРёРµ РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ СЃРєР°РЅРёСЂРѕРІР°РЅРёСЏ
             if (errorCount == 0)
             {
-                toolStripStatusLabel1.Text = $"Сканирование выполнено успешно. Токенов: {tokenCount}";
+                toolStripStatusLabel1.Text = $"РЎРєР°РЅРёСЂРѕРІР°РЅРёРµ РІС‹РїРѕР»РЅРµРЅРѕ СѓСЃРїРµС€РЅРѕ. РўРѕРєРµРЅРѕРІ: {tokenCount}";
             }
             else
             {
-                toolStripStatusLabel1.Text = $"Обнаружено ошибок: {errorCount}. Токенов: {tokenCount}";
+                toolStripStatusLabel1.Text = $"РћР±РЅР°СЂСѓР¶РµРЅРѕ РѕС€РёР±РѕРє: {errorCount}. РўРѕРєРµРЅРѕРІ: {tokenCount}";
             }
         }
 
 
 
         /// <summary>
-        /// НУМЕРАЦИИИЯ
+        /// РќРЈРњР•Р РђР¦РРРРЇ
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
 
         private void RichTextBox_VScroll(object sender, EventArgs e)
         {
-            // Синхронизация прокрутки между richTextBox1 и richTextBoxLineNumbers
+            // РЎРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ РїСЂРѕРєСЂСѓС‚РєРё РјРµР¶РґСѓ richTextBox1 Рё richTextBoxLineNumbers
             int verticalScrollPos = GetFirstVisibleLineNumber() * richTextBoxLineNumbers.Font.Height;
             richTextBoxLineNumbers.SelectionStart = richTextBoxLineNumbers.GetCharIndexFromPosition(new Point(0, verticalScrollPos));
             richTextBoxLineNumbers.ScrollToCaret();
@@ -106,7 +110,7 @@ namespace lab1_compiler
 
         private int GetFirstVisibleLineNumber()
         {
-            // Определяем первую видимую строку в richTextBox1
+            // РћРїСЂРµРґРµР»СЏРµРј РїРµСЂРІСѓСЋ РІРёРґРёРјСѓСЋ СЃС‚СЂРѕРєСѓ РІ richTextBox1
             int firstVisibleCharIndex = richTextBox1.GetCharIndexFromPosition(new Point(0, 0));
             return richTextBox1.GetLineFromCharIndex(firstVisibleCharIndex);
         }
@@ -132,20 +136,20 @@ namespace lab1_compiler
             richTextBoxLineNumbers.ScrollToCaret();
         }
         /// <summary>
-        /// РЕАЛИЗАЦИЯ ДРАГЭНДРОПА ПОФИКСИТЬ КАРТИНКУ
+        /// Р Р•РђР›РР—РђР¦РРЇ Р”Р РђР“Р­РќР”Р РћРџРђ РџРћР¤РРљРЎРРўР¬ РљРђР РўРРќРљРЈ
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void RichTextBox_DragEnter(object sender, DragEventArgs e)
         {
-            // Проверяем, что перетаскивается файл
+            // РџСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ РїРµСЂРµС‚Р°СЃРєРёРІР°РµС‚СЃСЏ С„Р°Р№Р»
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
-                e.Effect = DragDropEffects.Copy; // Разрешаем копирование
+                e.Effect = DragDropEffects.Copy; // Р Р°Р·СЂРµС€Р°РµРј РєРѕРїРёСЂРѕРІР°РЅРёРµ
             }
             else
             {
-                e.Effect = DragDropEffects.None; // Отклоняем другие типы данных
+                e.Effect = DragDropEffects.None; // РћС‚РєР»РѕРЅСЏРµРј РґСЂСѓРіРёРµ С‚РёРїС‹ РґР°РЅРЅС‹С…
             }
         }
 
@@ -161,22 +165,22 @@ namespace lab1_compiler
                     {
                         try
                         {
-                            // Явно очищаем содержимое перед загрузкой нового файла
+                            // РЇРІРЅРѕ РѕС‡РёС‰Р°РµРј СЃРѕРґРµСЂР¶РёРјРѕРµ РїРµСЂРµРґ Р·Р°РіСЂСѓР·РєРѕР№ РЅРѕРІРѕРіРѕ С„Р°Р№Р»Р°
                             richTextBox1.Clear();
 
-                            // Загружаем содержимое файла и обновляем интерфейс
-                            _fileHandler.DragFile(filePath); // Передаем путь в метод
+                            // Р—Р°РіСЂСѓР¶Р°РµРј СЃРѕРґРµСЂР¶РёРјРѕРµ С„Р°Р№Р»Р° Рё РѕР±РЅРѕРІР»СЏРµРј РёРЅС‚РµСЂС„РµР№СЃ
+                            _fileHandler.DragFile(filePath); // РџРµСЂРµРґР°РµРј РїСѓС‚СЊ РІ РјРµС‚РѕРґ
                             UpdateLineNumbers();
                             UpdateWindowTitle();
                         }
                         catch (Exception ex)
                         {
-                            MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show($"РћС€РёР±РєР°: {ex.Message}", "РћС€РёР±РєР°", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     }
                     else
                     {
-                        MessageBox.Show("Только текстовые файлы (.txt, .cs, .cpp, .java)", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        MessageBox.Show("РўРѕР»СЊРєРѕ С‚РµРєСЃС‚РѕРІС‹Рµ С„Р°Р№Р»С‹ (.txt, .cs, .cpp, .java)", "РћС€РёР±РєР°", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     }
                 }
             }
@@ -190,18 +194,18 @@ namespace lab1_compiler
         }
 
         /// <summary>
-        ///  РИЧТЕКСТБОКС
+        ///  Р РР§РўР•РљРЎРўР‘РћРљРЎ
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void RichTextBox_TextChanged(object? sender, EventArgs e)
         {
-            // Отключаем Undo/Redo для стилей
+            // РћС‚РєР»СЋС‡Р°РµРј Undo/Redo РґР»СЏ СЃС‚РёР»РµР№
             _corManager.PauseUndoTracking();
             //ApplySyntaxHighlighting();
             _corManager.ResumeUndoTracking();
 
-            // Обновление файла и интерфейса
+            // РћР±РЅРѕРІР»РµРЅРёРµ С„Р°Р№Р»Р° Рё РёРЅС‚РµСЂС„РµР№СЃР°
             _fileHandler.UpdateFileContent(richTextBox1.Text);
             UpdateLineNumbers();
             UpdateWindowTitle();
@@ -239,7 +243,7 @@ namespace lab1_compiler
         {
             var filePath = _fileHandler.CurrentFilePath;
             var fileName = string.IsNullOrEmpty(filePath)
-                ? "Новый файл.txt"
+                ? "РќРѕРІС‹Р№ С„Р°Р№Р».txt"
                 : Path.GetFileName(filePath);
 
             var asterisk = _fileHandler.IsFileModified ? "*" : "";
@@ -247,11 +251,11 @@ namespace lab1_compiler
                 ? ""
                 : $" ({filePath})";
 
-            return $"Компилятор — {fileName}{asterisk}{pathInfo}";
+            return $"РљРѕРјРїРёР»СЏС‚РѕСЂ вЂ” {fileName}{asterisk}{pathInfo}";
         }
 
         /// <summary>
-        /// РАЗМЕР ШРИФТА
+        /// Р РђР—РњР•Р  РЁР РР¤РўРђ
         /// </summary>
 
         private void InitializeFontSizeComboBox()
@@ -259,13 +263,13 @@ namespace lab1_compiler
             toolStripFontSizeComboBox.ComboBox.DropDownStyle = ComboBoxStyle.DropDown;
             toolStripFontSizeComboBox.ComboBox.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
 
-            // Заполняем только стандартными размерами
+            // Р—Р°РїРѕР»РЅСЏРµРј С‚РѕР»СЊРєРѕ СЃС‚Р°РЅРґР°СЂС‚РЅС‹РјРё СЂР°Р·РјРµСЂР°РјРё
             toolStripFontSizeComboBox.ComboBox.Items.AddRange(_defaultFontSizes.Cast<object>().ToArray());
 
-            // Устанавливаем текущий размер шрифта
+            // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј С‚РµРєСѓС‰РёР№ СЂР°Р·РјРµСЂ С€СЂРёС„С‚Р°
             toolStripFontSizeComboBox.ComboBox.Text = richTextBox1.Font.Size.ToString();
 
-            // Подписка на события
+            // РџРѕРґРїРёСЃРєР° РЅР° СЃРѕР±С‹С‚РёСЏ
             toolStripFontSizeComboBox.ComboBox.KeyDown += FontSizeComboBox_KeyDown;
             toolStripFontSizeComboBox.ComboBox.TextChanged += (s, e) => ApplyFontSizeFromComboBox();
         }
@@ -284,14 +288,14 @@ namespace lab1_compiler
         {
             if (float.TryParse(toolStripFontSizeComboBox.ComboBox.Text, out float newSize))
             {
-                // Ограничиваем диапазон без добавления в список
+                // РћРіСЂР°РЅРёС‡РёРІР°РµРј РґРёР°РїР°Р·РѕРЅ Р±РµР· РґРѕР±Р°РІР»РµРЅРёСЏ РІ СЃРїРёСЃРѕРє
                 newSize = Math.Clamp(newSize, 1, 99);
 
-                // Обновляем шрифт
+                // РћР±РЅРѕРІР»СЏРµРј С€СЂРёС„С‚
                 UpdateFontSize(richTextBox1, newSize);
                 UpdateFontSize(richTextBoxLineNumbers, newSize);
 
-                // Обновляем текст без добавления в Items
+                // РћР±РЅРѕРІР»СЏРµРј С‚РµРєСЃС‚ Р±РµР· РґРѕР±Р°РІР»РµРЅРёСЏ РІ Items
                 toolStripFontSizeComboBox.ComboBox.Text = newSize.ToString();
             }
         }
@@ -306,96 +310,96 @@ namespace lab1_compiler
 
         private void SetComboBoxSelectedSize(float size)
         {
-            // Просто устанавливаем текст, не добавляем новые элементы
+            // РџСЂРѕСЃС‚Рѕ СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј С‚РµРєСЃС‚, РЅРµ РґРѕР±Р°РІР»СЏРµРј РЅРѕРІС‹Рµ СЌР»РµРјРµРЅС‚С‹
             toolStripFontSizeComboBox.ComboBox.Text = size.ToString();
         }
 
         /// <summary>
-        /// Bar/FileManager.cs, отвечает за вкладку Файл в меню приложения
+        /// Bar/FileManager.cs, РѕС‚РІРµС‡Р°РµС‚ Р·Р° РІРєР»Р°РґРєСѓ Р¤Р°Р№Р» РІ РјРµРЅСЋ РїСЂРёР»РѕР¶РµРЅРёСЏ
         /// </summary>
 
-        private void создатьToolStripMenuItem_Click(object sender, EventArgs e)
+        private void СЃРѕР·РґР°С‚СЊToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _fileHandler.CreateNewFile();
         }
 
-        private void открытьToolStripMenuItem_Click(object sender, EventArgs e)
+        private void РѕС‚РєСЂС‹С‚СЊToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _fileHandler.OpenFile();
         }
 
-        private void сохранитьToolStripMenuItem_Click(object sender, EventArgs e)
+        private void СЃРѕС…СЂР°РЅРёС‚СЊToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _fileHandler.SaveFile();
         }
 
-        private void сохранитьКакToolStripMenuItem_Click(object sender, EventArgs e)
+        private void СЃРѕС…СЂР°РЅРёС‚СЊРљР°РєToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _fileHandler.SaveAsFile();
         }
 
-        private void выходToolStripMenuItem_Click(object sender, EventArgs e)
+        private void РІС‹С…РѕРґToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _fileHandler.Exit();
         }
 
         /// <summary>
-        /// Bar/CorManager.cs, отвечает за вкладку Правка в меню приложения
+        /// Bar/CorManager.cs, РѕС‚РІРµС‡Р°РµС‚ Р·Р° РІРєР»Р°РґРєСѓ РџСЂР°РІРєР° РІ РјРµРЅСЋ РїСЂРёР»РѕР¶РµРЅРёСЏ
         /// </summary>
 
-        private void отменитьToolStripMenuItem_Click(object sender, EventArgs e)
+        private void РѕС‚РјРµРЅРёС‚СЊToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _corManager.Undo();
         }
 
-        private void повторитьToolStripMenuItem_Click(object sender, EventArgs e)
+        private void РїРѕРІС‚РѕСЂРёС‚СЊToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _corManager.Redo();
         }
 
-        /// Реализация отменить и повторить: по одному символу за нажатие кнопки
+        /// Р РµР°Р»РёР·Р°С†РёСЏ РѕС‚РјРµРЅРёС‚СЊ Рё РїРѕРІС‚РѕСЂРёС‚СЊ: РїРѕ РѕРґРЅРѕРјСѓ СЃРёРјРІРѕР»Сѓ Р·Р° РЅР°Р¶Р°С‚РёРµ РєРЅРѕРїРєРё
 
-        private void вырезатьToolStripMenuItem_Click(object sender, EventArgs e)
+        private void РІС‹СЂРµР·Р°С‚СЊToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _corManager.Cut();
         }
 
-        private void копироватьToolStripMenuItem_Click(object sender, EventArgs e)
+        private void РєРѕРїРёСЂРѕРІР°С‚СЊToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _corManager.Copy();
         }
 
-        private void вставитьToolStripMenuItem_Click(object sender, EventArgs e)
+        private void РІСЃС‚Р°РІРёС‚СЊToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _corManager.Paste();
         }
 
-        private void удалитьToolStripMenuItem_Click(object sender, EventArgs e)
+        private void СѓРґР°Р»РёС‚СЊToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _corManager.Delete();
         }
 
-        private void выделитьВсеToolStripMenuItem_Click(object sender, EventArgs e)
+        private void РІС‹РґРµР»РёС‚СЊР’СЃРµToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _corManager.SelectAll();
         }
 
         /// <summary>
-        /// Bar/RefManager.cs, отвечает за вкладку Справка в меню приложения
+        /// Bar/RefManager.cs, РѕС‚РІРµС‡Р°РµС‚ Р·Р° РІРєР»Р°РґРєСѓ РЎРїСЂР°РІРєР° РІ РјРµРЅСЋ РїСЂРёР»РѕР¶РµРЅРёСЏ
         /// </summary>
 
-        private void вызовСправкиToolStripMenuItem_Click(object sender, EventArgs e)
+        private void РІС‹Р·РѕРІРЎРїСЂР°РІРєРёToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _refManager.ShowHelp();
         }
 
-        private void оПрограммеToolStripMenuItem_Click(object sender, EventArgs e)
+        private void РѕРџСЂРѕРіСЂР°РјРјРµToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _refManager.ShowAbout();
         }
 
         /// <summary>
-        /// Крупные кнопки интерфейса
+        /// РљСЂСѓРїРЅС‹Рµ РєРЅРѕРїРєРё РёРЅС‚РµСЂС„РµР№СЃР°
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -441,79 +445,87 @@ namespace lab1_compiler
         }
 
         /// <summary>
-        /// Запуск ПОКА ОСТАВИТЬ
+        /// Р—Р°РїСѓСЃРє РџРћРљРђ РћРЎРўРђР’РРўР¬
         /// </summary>
 
-        // Основной обработчик кнопки "Play"
+        // РћСЃРЅРѕРІРЅРѕР№ РѕР±СЂР°Р±РѕС‚С‡РёРє РєРЅРѕРїРєРё "Play"
         private void toolStripButtonPlay_Click(object sender, EventArgs e)
         {
-            // Лексический анализ
+            // РћС‡РёСЃС‚РєР° Р»РёРґРёСЂСѓСЋС‰РёС… РїСЂРѕР±РµР»РѕРІ РїРµСЂРµРґ РєРѕРјРјРµРЅС‚Р°СЂРёСЏРјРё
+            CleanLeadingSpaces(richTextBox1);
+
+            // РђРЅР°Р»РёР· С‚РµРєСЃС‚Р° Рё РѕР±РЅРѕРІР»РµРЅРёРµ С‚Р°Р±Р»РёС†С‹
             _lexer.Analyze(richTextBox1.Text);
             dataGridView1.Rows.Clear();
             foreach (var token in _lexer.Tokens)
-            {
                 dataGridView1.Rows.Add(token.Code, token.Type, token.Value, token.Position);
-            }
 
-            // Синтаксический анализ (по тексту, не по токенам!)
-            var parser = new RawTextParser();
-            var errors = parser.ParseWithRecovery(richTextBox1.Text);
-            dataGridView2.Rows.Clear();
-            foreach (var error in errors)
-            {
-                dataGridView2.Rows.Add(
-                    error.NumberOfError,
-                    error.Message,
-                    error.ExpectedToken,
-                    $"Строка {error.Line}, Позиция {error.Column}"
-                );
-            }
-
-            // Сначала сбросим стиль (чтобы убрать предыдущую подсветку)
+            // РЎР±СЂРѕСЃ СЃС‚РёР»РµР№ (С„РѕРЅ Рё С†РІРµС‚ С€СЂРёС„С‚Р°)
             SetDefaultStyle();
-            // Подсветка комментариев (зелёным)
-            HighlightCommentsInRichTextBox(richTextBox1);
-            // Подсветка ошибок (розовым)
-            HighlightErrorsInRichTextBox(richTextBox1, errors);
+            // РџРѕРґСЃРІРµС‚РєР° РєРѕРјРјРµРЅС‚Р°СЂРёРµРІ: Р·РµР»РµРЅС‹Р№ С†РІРµС‚ С€СЂРёС„С‚Р°
+            HighlightComments(richTextBox1);
+            // РџРѕРґСЃРІРµС‚РєР° РїРµСЂРІРѕР№ РѕС€РёР±РєРё: Р¶РµР»С‚С‹Р№ С„РѕРЅ
+            HighlightFirstError(richTextBox1);
         }
 
-        private void нейтрализацияОшибокToolStripMenuItem_Click(object sender, EventArgs e)
+        private void SetDefaultStyle()
         {
-            // Исправляем текст и получаем ошибки исходного текста
-            _recoveryParser.AutoCorrectErrors();
-            string originalText = richTextBox1.Text;
-            var errors = _recoveryParser.ParseWithRecovery(originalText);
-            string correctedText = _recoveryParser.GetCorrectedText();
-
-            // Обновляем текст
-            richTextBox1.Text = correctedText;
-
-            // Пересчитываем ошибки для исправленного текста
-            _recoveryParser.AutoCorrectErrors();
-            var correctedErrors = _recoveryParser.ParseWithRecovery(correctedText);
-
-            // Обновляем таблицу ошибок
-            dataGridView2.Rows.Clear();
-            foreach (var error in correctedErrors)
-            {
-                dataGridView2.Rows.Add(
-                    error.NumberOfError,
-                    error.Message,
-                    error.ExpectedToken,
-                    $"Строка {error.Line}, Позиция {error.Column}"
-                );
-            }
-
-            // Обновляем подсветку
-            SetDefaultStyle();
-            HighlightCommentsInRichTextBox(richTextBox1);
-            HighlightErrorsInRichTextBox(richTextBox1, correctedErrors);
+            richTextBox1.SelectAll();
+            richTextBox1.SelectionBackColor = richTextBox1.BackColor;
+            richTextBox1.SelectionColor = richTextBox1.ForeColor;
+            richTextBox1.DeselectAll();
         }
 
+        private void CleanLeadingSpaces(RichTextBox rtb)
+        {
+            var lines = rtb.Lines;
+            for (int i = 0; i < lines.Length; i++)
+            {
+                var line = lines[i];
+                var m = Regex.Match(line, "(?=//|#|/\\*)");
+                if (m.Success)
+                {
+                    int pos = m.Index;
+                    string before = line.Substring(0, pos);
+                    string after = line.Substring(pos);
+                    if (string.IsNullOrWhiteSpace(before))
+                        lines[i] = after;
+                    else
+                        lines[i] = before.TrimEnd() + " " + after;
+                }
+            }
+            rtb.Lines = lines;
+        }
+
+        private void HighlightComments(RichTextBox rtb)
+        {
+            var pattern = @"(//.*?$|#.*?$|/\*.*?\*/?)";
+            foreach (Match m in Regex.Matches(rtb.Text, pattern, RegexOptions.Multiline | RegexOptions.Singleline))
+            {
+                rtb.Select(m.Index, m.Length);
+                rtb.SelectionColor = Color.Green;
+            }
+            rtb.DeselectAll();
+        }
+
+        private void HighlightFirstError(RichTextBox rtb)
+        {
+            if (_lexer.Errors.Count == 0) return;
+            string err = _lexer.Errors[0];
+            var m = Regex.Match(err, @"line (\d+), col (\d+)");
+            if (!m.Success) return;
+            int line = int.Parse(m.Groups[1].Value);
+            int col = int.Parse(m.Groups[2].Value);
+            int idx = rtb.GetFirstCharIndexFromLine(line - 1) + (col - 1);
+            rtb.Select(idx, 1);
+            rtb.SelectionBackColor = Color.Yellow;
+            rtb.DeselectAll();
+            MessageBox.Show(err, "РћС€РёР±РєР° Р°РЅР°Р»РёР·Р°", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
 
 
         /// <summary>
-        /// Преобразует номер строки и столбца (начиная с 1) в индекс символа в строке.
+        /// РџСЂРµРѕР±СЂР°Р·СѓРµС‚ РЅРѕРјРµСЂ СЃС‚СЂРѕРєРё Рё СЃС‚РѕР»Р±С†Р° (РЅР°С‡РёРЅР°СЏ СЃ 1) РІ РёРЅРґРµРєСЃ СЃРёРјРІРѕР»Р° РІ СЃС‚СЂРѕРєРµ.
         /// </summary>
         private int GetCharIndexFromLineAndColumn(string text, int line, int col)
         {
@@ -527,68 +539,14 @@ namespace lab1_compiler
             return index;
         }
 
-        /// <summary>
-        /// Подсвечивает фрагменты, где обнаружены ошибки.
-        /// Длина выделения определяется как длина ожидаемого токена (error.ExpectedToken.Length).
-        /// </summary>
-        private void HighlightErrorsInRichTextBox(RichTextBox richTextBox, List<ParsingError> errors)
-        {
-            foreach (var error in errors)
-            {
-                int startIndex = GetCharIndexFromLineAndColumn(richTextBox.Text, error.Line, error.Column);
-                int length = error.ExpectedToken.Length;
-                if (startIndex + length > richTextBox.Text.Length)
-                    length = richTextBox.Text.Length - startIndex;
-                richTextBox.Select(startIndex, length);
-                richTextBox.SelectionBackColor = Color.LightPink;
-            }
-            richTextBox.DeselectAll();
-        }
 
         /// <summary>
-        /// Подсвечивает комментарии в richTextBox зеленым фоном.
-        /// Для однострочных комментариев используется шаблон: "#" и все до конца строки.
-        /// Для многострочных комментариев – шаблон для тройных кавычек (''' или """).
+        /// РџРѕРґСЃРІРµС‡РёРІР°РµС‚ РєРѕРјРјРµРЅС‚Р°СЂРёРё РІ richTextBox Р·РµР»РµРЅС‹Рј С„РѕРЅРѕРј.
+        /// Р”Р»СЏ РѕРґРЅРѕСЃС‚СЂРѕС‡РЅС‹С… РєРѕРјРјРµРЅС‚Р°СЂРёРµРІ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ С€Р°Р±Р»РѕРЅ: "#" Рё РІСЃРµ РґРѕ РєРѕРЅС†Р° СЃС‚СЂРѕРєРё.
+        /// Р”Р»СЏ РјРЅРѕРіРѕСЃС‚СЂРѕС‡РЅС‹С… РєРѕРјРјРµРЅС‚Р°СЂРёРµРІ вЂ“ С€Р°Р±Р»РѕРЅ РґР»СЏ С‚СЂРѕР№РЅС‹С… РєР°РІС‹С‡РµРє (''' РёР»Рё """).
         /// </summary>
 
-        private void HighlightCommentsInRichTextBox(RichTextBox richTextBox)
-        {
-            int selStart = richTextBox.SelectionStart;
-            int selLength = richTextBox.SelectionLength;
 
-            // Сброс цвета текста
-            richTextBox.SelectAll();
-            richTextBox.SelectionColor = Color.Black;
-            richTextBox.DeselectAll();
-
-            // Однострочные комментарии (//)
-            string singleLinePattern = @"//.*";
-            foreach (Match match in Regex.Matches(richTextBox.Text, singleLinePattern))
-            {
-                richTextBox.Select(match.Index, match.Length);
-                richTextBox.SelectionColor = Color.Green;
-            }
-
-            // Многострочные комментарии (/* */)
-            string multiLinePattern = @"/\*[\s\S]*?\*/";
-            foreach (Match match in Regex.Matches(richTextBox.Text, multiLinePattern))
-            {
-                richTextBox.Select(match.Index, match.Length);
-                richTextBox.SelectionColor = Color.Green;
-            }
-
-            richTextBox.Select(selStart, selLength);
-            richTextBox.Focus();
-        }
-
-        // Метод для применения синтаксической подсветки (вызывается при изменении текста)
-        private void ApplySyntaxHighlighting()
-        {
-            // Сброс стилей
-            SetDefaultStyle();
-            // Подсвечиваем комментарии (текст зеленый, фон стандартный)
-            HighlightCommentsInRichTextBox(richTextBox1);
-        }
 
 
         private int GetCharIndexFromLineAndPosition(RichTextBox rtb, int line, int position)
@@ -598,7 +556,7 @@ namespace lab1_compiler
             int charIndex = 0;
             for (int i = 0; i < line; i++)
             {
-                charIndex += rtb.Lines[i].Length + 1; // учитываем символ переноса строки
+                charIndex += rtb.Lines[i].Length + 1; // СѓС‡РёС‚С‹РІР°РµРј СЃРёРјРІРѕР» РїРµСЂРµРЅРѕСЃР° СЃС‚СЂРѕРєРё
             }
             return charIndex + position;
         }
@@ -617,6 +575,105 @@ namespace lab1_compiler
             _refManager.ShowAbout();
         }
 
-        
+        private void РЅРµР№С‚СЂР°Р»РёР·Р°С†РёСЏРћС€РёР±РѕРєToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_lexer.Errors.Count == 0) return;
+            string err = _lexer.Errors[0];
+            string text = richTextBox1.Text;
+
+            if (err.StartsWith("Unterminated multi-line comment")) // РјРЅРѕРіРѕСЃС‚СЂРѕС‡РЅС‹Р№
+            {
+                int openIdx = text.LastIndexOf("/*");
+                if (openIdx >= 0)
+                {
+                    int pos = text.Length - 1;
+                    char last = text[pos];
+                    if (last == '*' || last == '/')
+                        richTextBox1.Text = text.Substring(0, pos) + "*/";
+                    else if (!text.Contains("*/"))
+                        richTextBox1.AppendText("*/");
+                }
+                else if (!text.Contains("*/"))
+                {
+                    richTextBox1.AppendText("*/");
+                }
+            }
+            else if (err.StartsWith("РќРµРїСЂР°РІРёР»СЊРЅРѕРµ РЅР°С‡Р°Р»Рѕ РєРѕРјРјРµРЅС‚Р°СЂРёСЏ")) // РѕРґРЅРѕСЃС‚СЂРѕС‡РЅС‹Р№
+            {
+                // С‚Р°Рј СЃРѕРѕР±С‰РµРЅРёРµ С„РѕСЂРјРёСЂСѓРµС‚СЃСЏ С‚Р°Рє:
+                // "РќРµРїСЂР°РІРёР»СЊРЅРѕРµ РЅР°С‡Р°Р»Рѕ РєРѕРјРјРµРЅС‚Р°СЂРёСЏ '/x' at line L, col C"
+                var match = Regex.Match(err,
+                    @"РќРµРїСЂР°РІРёР»СЊРЅРѕРµ РЅР°С‡Р°Р»Рѕ РєРѕРјРјРµРЅС‚Р°СЂРёСЏ '/(.)' at line (\d+), col (\d+)");
+                if (match.Success)
+                {
+                    int line = int.Parse(match.Groups[2].Value);
+                    int col = int.Parse(match.Groups[3].Value);
+
+                    // Р°Р±СЃРѕР»СЋС‚РЅС‹Р№ РёРЅРґРµРєСЃ РІ С‚РµРєСЃС‚Рµ
+                    int idx = richTextBox1.GetFirstCharIndexFromLine(line - 1) + (col - 1);
+
+                    // С‡РµСЂРµР· StringBuilder РІСЃС‚Р°РІР»СЏРµРј РІС‚РѕСЂРѕР№ '/'
+                    var sb = new StringBuilder(richTextBox1.Text);
+                    sb.Insert(idx + 1, "/");
+                    richTextBox1.Text = sb.ToString();
+
+                    // РІРѕР·РІСЂР°С‰Р°РµРј РєСѓСЂСЃРѕСЂ РїСЂСЏРјРѕ РїРѕСЃР»Рµ '//'
+                    richTextBox1.SelectionStart = idx + 2;
+                    richTextBox1.ScrollToCaret();
+                }
+            }
+
+            _lexer.NeutralizeErrors();
+            SetDefaultStyle();
+        }
+
+
+
+        private void РїРѕСЃС‚Р°РЅРѕРІРєР°Р—Р°РґР°С‡РёToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _refManager.ShowTask();
+        }
+
+        private void РіСЂР°РјРјР°С‚РёРєР°ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _refManager.ShowGrammar();
+        }
+
+        private void РєР»Р°СЃСЃРёС„РёРєР°С†РёСЏР“СЂР°РјРјР°С‚РёРєРёToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _refManager.ShowCGrammar();
+        }
+
+        private void РјРµС‚РѕРґРђРЅР°Р»РёР·Р°ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _refManager.ShowMAnalysis();
+        }
+
+        private void РґРёР°РіРЅРѕСЃС‚РёРєР°РРќРµР№С‚СЂР°Р»РёР·Р°С†РёСЏРћС€РёР±РѕРєToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _refManager.ShowDiagError();
+        }
+
+        private void С‚РµСЃС‚РѕРІС‹Р№РџСЂРёРјРµСЂToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _refManager.ShowTest();
+        }
+
+        private void СЃРїРёСЃРѕРєР›РёС‚РµСЂР°С‚СѓСЂС‹ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _refManager.ShowLibrary();
+        }
+
+        private void РёСЃС…РѕРґРЅС‹Р№РљРѕРґРџСЂРѕРіСЂР°РјРјС‹ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _refManager.ShowCode();
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (_exitHandled) return;
+            _exitHandled = true;
+            _fileHandler.Exit();
+        }
     }
 }
