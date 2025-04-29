@@ -1,0 +1,51 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Постановка задачи (Комментарии PHP)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/themes/prism.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <h1>Постановка задачи</h1>
+
+    <h2>Оглавление</h2>
+    <ul>
+        <li><a href="#тема-работы">Тема работы</a></li>
+        <li><a href="#особенности-синтаксиса">Особенности синтаксиса</a></li>
+        <li><a href="#примеры-верных-комментариев">Примеры верных комментариев</a></li>
+    </ul>
+
+    <h2 id="тема-работы">Тема работы</h2>
+    <p>Разработка языкового процессора для анализа комментариев в PHP. Распознавание однострочных (//, #) и многострочных (/*...*/) комментариев.</p>
+
+    <h2 id="особенности-синтаксиса">Особенности синтаксиса</h2>
+    <p>Комментарии в PHP игнорируются интерпретатором и используются для аннотации кода. Основные типы:</p>
+    
+    <pre><code class="language-php">// Однострочный комментарий
+# Альтернативный однострочный
+/* Многострочный 
+   комментарий */</code></pre>
+
+    <h2 id="примеры-верных-комментариев">Примеры верных комментариев</h2>
+
+    <p>Согласно автоматной грамматике, корректными считаются:</p>
+
+    <pre><code class="language-php">// Простой комментарий</code></pre>
+
+    <pre><code class="language-php"># Комментарий с кавычкой \"</code></pre>
+
+    <pre><code class="language-php">/* Многострочный 
+   комментарий */</code></pre>
+
+    <pre><code class="language-php">echo "Текст"; // Комментарий после кода</code></pre>
+
+    <pre><code class="language-php">/**/  // Пустой многострочный комментарий</code></pre>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/components/prism-php.min.js"></script>
+
+</body>
+</html>
