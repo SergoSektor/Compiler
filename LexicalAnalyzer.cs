@@ -5,161 +5,69 @@ namespace lab1_compiler.Bar
 {
     public class LexicalToken
     {
-        public int Code { get; set; }
         public string Type { get; set; }
         public string Value { get; set; }
-        public string Position { get; set; }
+        public int Position { get; set; }
     }
 
     internal class LexicalAnalyzer
     {
-        // Код токенов:
-        // 1 - начало однострочного комментария,
-        // 2 - начало многострочного комментария,
-        // 3 - конец многострочного комментария,
-        // 4 - текст комментария.
-        private readonly Dictionary<string, int> _tokenTypes = new Dictionary<string, int>
-        {
-            { "SingleLineCommentStart", 1 },
-            { "MultiLineCommentStart", 2 },
-            { "MultiLineCommentEnd", 3 },
-            { "CommentText", 4 }
-        };
+        private int _position;
+        private string _input;
+        private readonly List<string> _errors = new List<string>();
 
         public List<LexicalToken> Tokens { get; } = new List<LexicalToken>();
-        public List<string> Errors { get; } = new List<string>();
+        public List<string> Errors => _errors;
 
-        public void Analyze(string text)
+        public void Analyze(string input)
         {
+            _input = input;
+            _position = 0;
             Tokens.Clear();
-            Errors.Clear();
+            _errors.Clear();
 
-            int i = 0;
-            int line = 1;
-            int col = 1;
-            int length = text.Length;
-
-            while (i < length)
+            while (_position < _input.Length)
             {
-                char current = text[i];
+                char current = _input[_position];
 
-                // Обновляем line и col для новой строки
-                if (current == '\n')
+                if (char.IsWhiteSpace(current))
                 {
-                    line++;
-                    col = 1;
-                    i++;
+                    _position++;
                     continue;
                 }
 
-                // Обработка однострочного комментария: //
-                if (current == '/' && (i + 1) < length && text[i + 1] == '/')
+                if (char.IsDigit(current))
                 {
-                    int startLine = line, startCol = col;
-                    Tokens.Add(new LexicalToken
-                    {
-                        Code = _tokenTypes["SingleLineCommentStart"],
-                        Type = "Начало однострочного комментария",
-                        Value = "//",
-                        Position = $"Строка {startLine}, Позиция {startCol}"
-                    });
-                    i += 2;
-                    col += 2;
-                    int commentStart = i;
-                    while (i < length && text[i] != '\n')
-                    {
-                        i++;
-                        col++;
-                    }
-                    string commentText = text.Substring(commentStart, i - commentStart).Trim();
-                    Tokens.Add(new LexicalToken
-                    {
-                        Code = _tokenTypes["CommentText"],
-                        Type = "Текст комментария",
-                        Value = commentText,
-                        Position = $"Строка {startLine}, Позиция {startCol + 2}"
-                    });
-                    continue;
+                    ReadNumber();
+                }
+                else if (current == '+' || current == '-' || current == '*' || current == '/')
+                {
+                    Tokens.Add(new LexicalToken { Type = "OPERATOR", Value = current.ToString(), Position = _position });
+                    _position++;
+                }
+                else if (current == '(' || current == ')')
+                {
+                    Tokens.Add(new LexicalToken { Type = "BRACKET", Value = current.ToString(), Position = _position });
+                    _position++;
                 }
 
-                // Обработка многострочного комментария: корректный случай "/*"
-                if (current == '/' && (i + 1) < length && text[i + 1] == '*')
+                else
                 {
-                    int startLine = line, startCol = col;
-                    Tokens.Add(new LexicalToken
-                    {
-                        Code = _tokenTypes["MultiLineCommentStart"],
-                        Type = "Начало многострочного комментария",
-                        Value = "/*",
-                        Position = $"Строка {startLine}, Позиция {startCol}"
-                    });
-                    i += 2;
-                    col += 2;
-                    int commentTextStart = i;
-                    bool endFound = false;
-                    while (i < length)
-                    {
-                        if (text[i] == '\n')
-                        {
-                            line++;
-                            col = 1;
-                            i++;
-                            continue;
-                        }
-                        // Если найдено окончание комментария
-                        if (text[i] == '*' && (i + 1) < length && text[i + 1] == '/')
-                        {
-                            endFound = true;
-                            break;
-                        }
-                        i++;
-                        col++;
-                    }
-                    string multiCommentText = text.Substring(commentTextStart, i - commentTextStart).Trim();
-                    Tokens.Add(new LexicalToken
-                    {
-                        Code = _tokenTypes["CommentText"],
-                        Type = "Текст комментария",
-                        Value = multiCommentText,
-                        Position = $"Строка {startLine}, Позиция {startCol + 2}"
-                    });
-                    if (endFound)
-                    {
-                        Tokens.Add(new LexicalToken
-                        {
-                            Code = _tokenTypes["MultiLineCommentEnd"],
-                            Type = "Конец многострочного комментария",
-                            Value = "*/",
-                            Position = $"Строка {line}, Позиция {col}"
-                        });
-                        i += 2;
-                        col += 2;
-                    }
-                    continue;
+                    _errors.Add($"Недопустимый символ '{current}' в позиции {_position}");
+                    _position++;
                 }
-
-                
-
-                // Если встретился случай корректного закрытия комментария "*/" вне блока (например, когда комментарий не был открыт)
-                if (current == '*' && (i + 1) < length && text[i + 1] == '/')
-                {
-                    int startLine = line, startCol = col;
-                    Tokens.Add(new LexicalToken
-                    {
-                        Code = _tokenTypes["MultiLineCommentEnd"],
-                        Type = "Конец многострочного комментария",
-                        Value = "*/",
-                        Position = $"Строка {startLine}, Позиция {startCol}"
-                    });
-                    i += 2;
-                    col += 2;
-                    continue;
-                }
-
-                // Пропускаем остальные символы
-                i++;
-                col++;
             }
+        }
+
+        private void ReadNumber()
+        {
+            int start = _position;
+            while (_position < _input.Length && char.IsDigit(_input[_position]))
+            {
+                _position++;
+            }
+            string num = _input.Substring(start, _position - start);
+            Tokens.Add(new LexicalToken { Type = "NUMBER", Value = num, Position = start });
         }
     }
 }
