@@ -14,7 +14,7 @@ namespace lab1_compiler
     {
 
         private readonly List<float> _defaultFontSizes = new List<float> { 8, 9, 10, 11, 12, 14, 16, 18, 20, 24 };
-        private RawTextParser _recoveryParser = new RawTextParser();
+        
         private readonly LexicalAnalyzer _lexer = new LexicalAnalyzer();
 
         /// Берём функции для элементов меню
@@ -447,67 +447,81 @@ namespace lab1_compiler
         // Основной обработчик кнопки "Play"
         private void toolStripButtonPlay_Click(object sender, EventArgs e)
         {
-            // Лексический анализ
-            _lexer.Analyze(richTextBox1.Text);
-            dataGridView1.Rows.Clear();
-            foreach (var token in _lexer.Tokens)
+            richTextBox2.Text = "";
+            string inputExpr = richTextBox1.Text.Replace(" ", "");
+            richTextBox2.Text = $"Выражение мат. языком:\n{inputExpr}\n\n";
+
+            var lexer = new LexicalAnalyzer();
+            lexer.Analyze(inputExpr);
+
+            if (lexer.Errors.Count > 0)
             {
-                dataGridView1.Rows.Add(token.Code, token.Type, token.Value, token.Position);
+                richTextBox2.AppendText("Лексические ошибки:\n" + string.Join("\n", lexer.Errors));
+                return;
             }
 
-            // Синтаксический анализ (по тексту, не по токенам!)
-            var parser = new RawTextParser();
-            var errors = parser.ParseWithRecovery(richTextBox1.Text);
-            dataGridView2.Rows.Clear();
-            foreach (var error in errors)
+            var parser = new Parser();
+            var syntaxErrors = parser.Parse(lexer.Tokens);
+
+            if (syntaxErrors.Count > 0)
             {
-                dataGridView2.Rows.Add(
-                    error.NumberOfError,
-                    error.Message,
-                    error.ExpectedToken,
-                    $"Строка {error.Line}, Позиция {error.Column}"
-                );
+                richTextBox2.AppendText("Синтаксические ошибки:\n");
+                foreach (var error in syntaxErrors)
+                {
+                    richTextBox2.AppendText($"{error.Message} (позиция {error.Position})\n");
+                }
+                return;
             }
 
-            // Сначала сбросим стиль (чтобы убрать предыдущую подсветку)
-            SetDefaultStyle();
-            // Подсветка комментариев (зелёным)
-            HighlightCommentsInRichTextBox(richTextBox1);
-            // Подсветка ошибок (розовым)
-            HighlightErrorsInRichTextBox(richTextBox1, errors);
+            var poliz = parser.GetPOLIZ();
+            richTextBox2.AppendText($"Выражение в ПОЛИЗ:\n{string.Join(" ", poliz)}\n\n");
+
+            try
+            {
+                int result = EvaluatePOLIZ(poliz);
+                richTextBox2.AppendText($"Ответ: {result}");
+            }
+            catch (DivideByZeroException)
+            {
+                richTextBox2.AppendText("Ошибка: Деление на ноль запрещено!");
+            }
+            catch
+            {
+                richTextBox2.AppendText("Ошибка вычисления");
+            }
+        }
+
+        private int EvaluatePOLIZ(List<string> poliz)
+        {
+            Stack<int> stack = new Stack<int>();
+            foreach (var token in poliz)
+            {
+                if (int.TryParse(token, out int num))
+                {
+                    stack.Push(num);
+                }
+                else
+                {
+                    int b = stack.Pop();
+                    int a = stack.Pop();
+                    switch (token)
+                    {
+                        case "+": stack.Push(a + b); break;
+                        case "-": stack.Push(a - b); break;
+                        case "*": stack.Push(a * b); break;
+                        case "/":
+                            if (b == 0) throw new DivideByZeroException();
+                            stack.Push(a / b);
+                            break;
+                    }
+                }
+            }
+            return stack.Pop();
         }
 
         private void нейтрализацияОшибокToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // Исправляем текст и получаем ошибки исходного текста
-            _recoveryParser.AutoCorrectErrors();
-            string originalText = richTextBox1.Text;
-            var errors = _recoveryParser.ParseWithRecovery(originalText);
-            string correctedText = _recoveryParser.GetCorrectedText();
-
-            // Обновляем текст
-            richTextBox1.Text = correctedText;
-
-            // Пересчитываем ошибки для исправленного текста
-            _recoveryParser.AutoCorrectErrors();
-            var correctedErrors = _recoveryParser.ParseWithRecovery(correctedText);
-
-            // Обновляем таблицу ошибок
-            dataGridView2.Rows.Clear();
-            foreach (var error in correctedErrors)
-            {
-                dataGridView2.Rows.Add(
-                    error.NumberOfError,
-                    error.Message,
-                    error.ExpectedToken,
-                    $"Строка {error.Line}, Позиция {error.Column}"
-                );
-            }
-
-            // Обновляем подсветку
-            SetDefaultStyle();
-            HighlightCommentsInRichTextBox(richTextBox1);
-            HighlightErrorsInRichTextBox(richTextBox1, correctedErrors);
+            
         }
 
 
@@ -527,23 +541,6 @@ namespace lab1_compiler
             return index;
         }
 
-        /// <summary>
-        /// Подсвечивает фрагменты, где обнаружены ошибки.
-        /// Длина выделения определяется как длина ожидаемого токена (error.ExpectedToken.Length).
-        /// </summary>
-        private void HighlightErrorsInRichTextBox(RichTextBox richTextBox, List<ParsingError> errors)
-        {
-            foreach (var error in errors)
-            {
-                int startIndex = GetCharIndexFromLineAndColumn(richTextBox.Text, error.Line, error.Column);
-                int length = error.ExpectedToken.Length;
-                if (startIndex + length > richTextBox.Text.Length)
-                    length = richTextBox.Text.Length - startIndex;
-                richTextBox.Select(startIndex, length);
-                richTextBox.SelectionBackColor = Color.LightPink;
-            }
-            richTextBox.DeselectAll();
-        }
 
         /// <summary>
         /// Подсвечивает комментарии в richTextBox зеленым фоном.
