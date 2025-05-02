@@ -132,12 +132,16 @@
 - 5. О → num | (E) 
 - 6. num  → digit {digit}
 - 2) Реализовать алгоритм записи арифметических выражений в ПОЛИЗ и алгоритм вычисления выражений в ПОЛИЗ.
+
 ![изображение](https://github.com/user-attachments/assets/94eca08a-581f-44bb-8f73-12ab32b75559)
 - рис.7 Пример с ошибкой 1
+
 ![изображение](https://github.com/user-attachments/assets/215e2fe1-b4b6-41c4-a03e-14405c20605c)
 - рис.8 Пример с ошибкой 2
+
 ![изображение](https://github.com/user-attachments/assets/c077831e-7c71-483e-827d-a4ed34e628df)
 - рис.9 Пример с ошибкой 3
+
 ![изображение](https://github.com/user-attachments/assets/6bab01bc-dd9b-416d-aa0c-6df666e38630)
 - рис.10 Верно решенный пример
 
