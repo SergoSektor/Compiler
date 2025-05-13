@@ -156,6 +156,16 @@
 пробелами или символами -).
 - (1). Построить РВ, описывающее формат адреса электронной
 почты.
+**Примеры регулярных выражений:**
+  КПП: 1003ZZ013
+  Телефон: 89992283322
+  Email: unionbro@gmail.com
 
-![изображение](https://github.com/user-attachments/assets/209b8be4-cf64-4ad3-b808-2c09af727035)
-- рис.11 Входные и выходные данные
+![изображение](https://github.com/user-attachments/assets/983f4ab1-1f5c-46b7-afbd-7f820797b9be)
+- рис.11 Пример РВ: КПП
+
+![изображение](https://github.com/user-attachments/assets/05fafd09-ad77-4b71-90b2-8983137ddfdd)
+- рис.12 Пример РВ: Телефон
+
+![изображение](https://github.com/user-attachments/assets/4d697f25-e600-45b3-9961-f850256dab99)
+- рис.13 Пример РВ: Email
