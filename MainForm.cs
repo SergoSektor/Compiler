@@ -13,9 +13,256 @@ namespace lab1_compiler
     public partial class Compiler : Form
     {
 
+        //ЛЕКСЕР
+        public enum TokenType
+        {
+            IF, ELSE, TRUE, FALSE, AND, OR, NOT,
+            ID, ASSIGN, SEMICOLON,
+            EOF, ERROR
+        }
+
+        public class Token
+        {
+            public TokenType Type { get; set; }
+            public string Value { get; set; }
+            public int Position { get; set; }
+
+            public Token(TokenType type, string value, int position)
+            {
+                Type = type;
+                Value = value;
+                Position = position;
+            }
+
+            public override string ToString() => $"{Type} ({Value})";
+        }
+
+        public class Lexer
+        {
+            private string _text;
+            private int _pos;
+            private readonly List<string> _assignOps = new() { "==", "<", "<=", ">", ">=", "!=" };
+
+            public Lexer(string text)
+            {
+                _text = text;
+                _pos = 0;
+            }
+
+            private char Current => _pos < _text.Length ? _text[_pos] : '\0';
+
+            private void Advance() => _pos++;
+
+            private void SkipWhitespace()
+            {
+                while (char.IsWhiteSpace(Current)) Advance();
+            }
+
+            public List<Token> Tokenize()
+            {
+                List<Token> tokens = new();
+                while (_pos < _text.Length)
+                {
+                    SkipWhitespace();
+                    int start = _pos;
+
+                    if (char.IsLetter(Current))
+                    {
+                        string ident = ReadIdentifier();
+
+                        // ключевые слова
+                        string upperIdent = ident.ToUpper();
+                        switch (upperIdent)
+                        {
+                            case "IF": tokens.Add(new Token(TokenType.IF, ident, start)); break;
+                            case "ELSE": tokens.Add(new Token(TokenType.ELSE, ident, start)); break;
+                            case "TRUE": tokens.Add(new Token(TokenType.TRUE, ident, start)); break;
+                            case "FALSE": tokens.Add(new Token(TokenType.FALSE, ident, start)); break;
+                            case "AND": tokens.Add(new Token(TokenType.AND, ident, start)); break;
+                            case "OR": tokens.Add(new Token(TokenType.OR, ident, start)); break;
+                            case "NOT": tokens.Add(new Token(TokenType.NOT, ident, start)); break;
+                            default: tokens.Add(new Token(TokenType.ID, ident, start)); break;
+                        }
+                        continue;
+                    }
+
+                    else if (Current == ';')
+                    {
+                        tokens.Add(new Token(TokenType.SEMICOLON, ";", _pos));
+                        Advance();
+                    }
+                    else if (_assignOps.Any(op => _text.Substring(_pos).StartsWith(op)))
+                    {
+                        var op = _assignOps.First(op => _text.Substring(_pos).StartsWith(op));
+                        tokens.Add(new Token(TokenType.ASSIGN, op, _pos));
+                        _pos += op.Length;
+                    }
+
+                    else
+                    {
+                        tokens.Add(new Token(TokenType.ERROR, Current.ToString(), _pos));
+                        Advance();
+                    }
+                }
+
+                tokens.Add(new Token(TokenType.EOF, "", _pos));
+                return tokens;
+            }
+
+            private string ReadIdentifier()
+            {
+                int start = _pos;
+                while (char.IsLetterOrDigit(Current)) Advance(); // останавливаемся строго на первом не-алфавитном символе
+                return _text.Substring(start, _pos - start);
+            }
+
+        }
+
+        //ПАРСЕР
+        public class RecursiveDescentParser
+        {
+            private List<Token> _tokens;
+            private int _current;
+            private int _stepCounter = 1;
+
+            public List<string> Log { get; } = new();
+            public List<string> Errors { get; } = new();
+
+            public RecursiveDescentParser(List<Token> tokens)
+            {
+                _tokens = tokens;
+                _current = 0;
+            }
+
+            private Token Peek => _current < _tokens.Count ? _tokens[_current] : new Token(TokenType.EOF, "", _current);
+            private Token Advance() => _current < _tokens.Count ? _tokens[_current++] : Peek;
+            private bool Match(TokenType type) => Peek.Type == type;
+
+            private void LogStep(string method, string description)
+            {
+                string line = $"{_stepCounter.ToString().PadRight(4)}| {method.PadRight(12)}| {description}";
+                Log.Add(line);
+                _stepCounter++;
+            }
+
+
+
+            private void Error(string message)
+            {
+                Errors.Add($"ОШИБКА [{Peek.Position}]: {message}, токен: {Peek.Value}");
+            }
+
+            public void ParseStmt()
+            {
+                LogStep("ParseSTMT", "Вход в stmt");
+
+                if (Match(TokenType.IF))
+                {
+                    LogStep("ParseIF", "Ключевое слово IF");
+                    Advance();
+
+                    ParseExp();
+
+                    ParseStmt();
+
+                    if (Match(TokenType.ELSE))
+                    {
+                        LogStep("ParseELSE", "Ключевое слово ELSE");
+                        Advance();
+                        ParseStmt();
+                    }
+                }
+                else if (Match(TokenType.ID))
+                {
+                    LogStep("ParseID", Peek.Value);
+                    Advance();
+
+                    if (Match(TokenType.ASSIGN))
+                    {
+                        LogStep("ParseASSIGN", Peek.Value);
+                        Advance();
+
+                        ParseExp();
+
+                        if (Match(TokenType.SEMICOLON))
+                        {
+                            LogStep("SEMICOLON", ";");
+                            Advance();
+                        }
+                        else
+                        {
+                            Error("Ожидалась точка с запятой ';'");
+                        }
+                    }
+                    else
+                    {
+                        Error("Ожидался оператор сравнения/присваивания");
+                    }
+                }
+                else
+                {
+                    Error("Ожидался IF или идентификатор");
+                    Advance();
+                }
+            }
+
+
+            public void ParseExp()
+            {
+                LogStep("ParseEXP", "Вход в выражение");
+
+                if (Match(TokenType.TRUE) || Match(TokenType.FALSE))
+                {
+                    LogStep("ParseCONST", Peek.Value);
+                    Advance();
+                }
+                else if (Match(TokenType.ID))
+                {
+                    LogStep("ParseID", Peek.Value);
+                    Advance();
+                }
+                else
+                {
+                    Error("Ожидался идентификатор или константа");
+                    Advance();
+                    return;
+                }
+
+                if (Match(TokenType.ASSIGN))
+                {
+                    LogStep("ParseASSIGN", Peek.Value);
+                    Advance();
+
+                    if (Match(TokenType.TRUE) || Match(TokenType.FALSE))
+                    {
+                        LogStep("ParseCONST", Peek.Value);
+                        Advance();
+                    }
+                    else if (Match(TokenType.ID))
+                    {
+                        LogStep("ParseID", Peek.Value);
+                        Advance();
+                    }
+                    else
+                    {
+                        Error("Ожидалась константа или идентификатор после оператора сравнения");
+                        Advance();
+                    }
+                }
+
+                while (Match(TokenType.OR) || Match(TokenType.AND))
+                {
+                    LogStep("ParseLOGICAL", Peek.Value);
+                    Advance();
+                    ParseExp();
+                }
+            }
+
+        }
+
+
+
         private readonly List<float> _defaultFontSizes = new List<float> { 8, 9, 10, 11, 12, 14, 16, 18, 20, 24 };
-        private RawTextParser _recoveryParser = new RawTextParser();
-        private readonly LexicalAnalyzer _lexer = new LexicalAnalyzer();
 
         /// Берём функции для элементов меню
         private readonly FileManager _fileHandler;
@@ -45,7 +292,6 @@ namespace lab1_compiler
             richTextBox1.VScroll += RichTextBox_VScroll;
 
             toolStripStatusLabel1.Text = "Compiler успешно запущена";
-            richTextBox1.TextChanged += RichTextBox1_TextChanged;
 
         }
 
@@ -66,28 +312,6 @@ namespace lab1_compiler
                 richTextBox1.SelectionFont = new Font(richTextBox1.Font, style);
             }
         }
-
-
-        /// статусная строка
-        private void RichTextBox1_TextChanged(object sender, EventArgs e)
-        {
-            // Запускаем лексический анализатор при изменении текста
-            _lexer.Analyze(richTextBox1.Text);
-
-            int tokenCount = _lexer.Tokens.Count;
-            int errorCount = _lexer.Errors.Count;
-
-            // Формируем сообщение в зависимости от результатов сканирования
-            if (errorCount == 0)
-            {
-                toolStripStatusLabel1.Text = $"Сканирование выполнено успешно. Токенов: {tokenCount}";
-            }
-            else
-            {
-                toolStripStatusLabel1.Text = $"Обнаружено ошибок: {errorCount}. Токенов: {tokenCount}";
-            }
-        }
-
 
 
         /// <summary>
@@ -447,68 +671,34 @@ namespace lab1_compiler
         // Основной обработчик кнопки "Play"
         private void toolStripButtonPlay_Click(object sender, EventArgs e)
         {
-            // Лексический анализ
-            _lexer.Analyze(richTextBox1.Text);
-            dataGridView1.Rows.Clear();
-            foreach (var token in _lexer.Tokens)
-            {
-                dataGridView1.Rows.Add(token.Code, token.Type, token.Value, token.Position);
-            }
+            string code = richTextBox1.Text;
 
-            // Синтаксический анализ (по тексту, не по токенам!)
-            var parser = new RawTextParser();
-            var errors = parser.ParseWithRecovery(richTextBox1.Text);
-            dataGridView2.Rows.Clear();
-            foreach (var error in errors)
-            {
-                dataGridView2.Rows.Add(
-                    error.NumberOfError,
-                    error.Message,
-                    error.ExpectedToken,
-                    $"Строка {error.Line}, Позиция {error.Column}"
-                );
-            }
+            // Лексер
+            var lexer = new Lexer(code);
+            var tokens = lexer.Tokenize();
 
-            // Сначала сбросим стиль (чтобы убрать предыдущую подсветку)
-            SetDefaultStyle();
-            // Подсветка комментариев (зелёным)
-            HighlightCommentsInRichTextBox(richTextBox1);
-            // Подсветка ошибок (розовым)
-            HighlightErrorsInRichTextBox(richTextBox1, errors);
+            // Парсер
+            var parser = new RecursiveDescentParser(tokens);
+            parser.ParseStmt();
+
+            // Вывод логов
+            richTextBox3.Clear();
+            richTextBox3.AppendText("№   | Метод       | Описание ->>\n");
+            richTextBox3.AppendText("-----------------------------\n");
+            foreach (var entry in parser.Log)
+                richTextBox3.AppendText(entry + Environment.NewLine);
+
+            // Ошибки
+            richTextBox4.Clear();
+            foreach (var error in parser.Errors)
+                richTextBox4.AppendText(error + Environment.NewLine);
+
+            // Подсветка
+            HighlightErrors(code, parser.Errors);
         }
 
-        private void нейтрализацияОшибокToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            // Исправляем текст и получаем ошибки исходного текста
-            _recoveryParser.AutoCorrectErrors();
-            string originalText = richTextBox1.Text;
-            var errors = _recoveryParser.ParseWithRecovery(originalText);
-            string correctedText = _recoveryParser.GetCorrectedText();
 
-            // Обновляем текст
-            richTextBox1.Text = correctedText;
 
-            // Пересчитываем ошибки для исправленного текста
-            _recoveryParser.AutoCorrectErrors();
-            var correctedErrors = _recoveryParser.ParseWithRecovery(correctedText);
-
-            // Обновляем таблицу ошибок
-            dataGridView2.Rows.Clear();
-            foreach (var error in correctedErrors)
-            {
-                dataGridView2.Rows.Add(
-                    error.NumberOfError,
-                    error.Message,
-                    error.ExpectedToken,
-                    $"Строка {error.Line}, Позиция {error.Column}"
-                );
-            }
-
-            // Обновляем подсветку
-            SetDefaultStyle();
-            HighlightCommentsInRichTextBox(richTextBox1);
-            HighlightErrorsInRichTextBox(richTextBox1, correctedErrors);
-        }
 
 
 
@@ -531,19 +721,31 @@ namespace lab1_compiler
         /// Подсвечивает фрагменты, где обнаружены ошибки.
         /// Длина выделения определяется как длина ожидаемого токена (error.ExpectedToken.Length).
         /// </summary>
-        private void HighlightErrorsInRichTextBox(RichTextBox richTextBox, List<ParsingError> errors)
+        private void HighlightErrors(string inputText, List<string> errorLog)
         {
-            foreach (var error in errors)
+            richTextBox1.SelectAll();
+            richTextBox1.SelectionBackColor = Color.White;
+
+            foreach (string error in errorLog)
             {
-                int startIndex = GetCharIndexFromLineAndColumn(richTextBox.Text, error.Line, error.Column);
-                int length = error.ExpectedToken.Length;
-                if (startIndex + length > richTextBox.Text.Length)
-                    length = richTextBox.Text.Length - startIndex;
-                richTextBox.Select(startIndex, length);
-                richTextBox.SelectionBackColor = Color.LightPink;
+                Match match = Regex.Match(error, @"токен: (.+)$");
+                if (match.Success)
+                {
+                    string value = match.Groups[1].Value;
+                    int index = inputText.IndexOf(value, StringComparison.OrdinalIgnoreCase);
+                    if (index >= 0)
+                    {
+                        richTextBox1.Select(index, value.Length);
+                        richTextBox1.SelectionBackColor = Color.LightPink;
+                    }
+                }
             }
-            richTextBox.DeselectAll();
+
+            richTextBox1.Select(0, 0);
         }
+
+
+
 
         /// <summary>
         /// Подсвечивает комментарии в richTextBox зеленым фоном.
