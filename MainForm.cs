@@ -14,7 +14,7 @@ namespace lab1_compiler
     {
 
         private readonly List<float> _defaultFontSizes = new List<float> { 8, 9, 10, 11, 12, 14, 16, 18, 20, 24 };
-        private RawTextParser _recoveryParser = new RawTextParser();
+        
         private readonly LexicalAnalyzer _lexer = new LexicalAnalyzer();
 
         /// Берём функции для элементов меню
@@ -57,35 +57,16 @@ namespace lab1_compiler
             richTextBox1.DeselectAll();
         }
 
-        private void HighlightMatches(string pattern, Color color, FontStyle style)
-        {
-            foreach (Match match in Regex.Matches(richTextBox1.Text, pattern))
-            {
-                richTextBox1.Select(match.Index, match.Length);
-                richTextBox1.SelectionColor = color;
-                richTextBox1.SelectionFont = new Font(richTextBox1.Font, style);
-            }
-        }
-
-
         /// статусная строка
         private void RichTextBox1_TextChanged(object sender, EventArgs e)
         {
-            // Запускаем лексический анализатор при изменении текста
-            _lexer.Analyze(richTextBox1.Text);
 
-            int tokenCount = _lexer.Tokens.Count;
-            int errorCount = _lexer.Errors.Count;
+            // Подсчет совпадений для каждого шаблона
+            int kppCount = Regex.Matches(richTextBox1.Text, @"\b\d{4}[0-9A-Za-z]{2}\d{3}\b").Count;
+            int phoneCount = Regex.Matches(richTextBox1.Text, @"(\+7|8)[\s\-]?\(?\d{3}\)?[\s\-]?\d{3}[\s\-]?\d{2}[\s\-]?\d{2}").Count;
+            int emailCount = Regex.Matches(richTextBox1.Text, @"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}").Count;
 
-            // Формируем сообщение в зависимости от результатов сканирования
-            if (errorCount == 0)
-            {
-                toolStripStatusLabel1.Text = $"Сканирование выполнено успешно. Токенов: {tokenCount}";
-            }
-            else
-            {
-                toolStripStatusLabel1.Text = $"Обнаружено ошибок: {errorCount}. Токенов: {tokenCount}";
-            }
+            toolStripStatusLabel1.Text = $"КПП: {kppCount}, Телефоны: {phoneCount}, Email: {emailCount}";
         }
 
 
@@ -447,67 +428,40 @@ namespace lab1_compiler
         // Основной обработчик кнопки "Play"
         private void toolStripButtonPlay_Click(object sender, EventArgs e)
         {
-            // Лексический анализ
-            _lexer.Analyze(richTextBox1.Text);
-            dataGridView1.Rows.Clear();
-            foreach (var token in _lexer.Tokens)
-            {
-                dataGridView1.Rows.Add(token.Code, token.Type, token.Value, token.Position);
-            }
+            // Очистка вывода
+            richTextBox2.Clear();
+            string input = richTextBox1.Text;
 
-            // Синтаксический анализ (по тексту, не по токенам!)
-            var parser = new RawTextParser();
-            var errors = parser.ParseWithRecovery(richTextBox1.Text);
-            dataGridView2.Rows.Clear();
-            foreach (var error in errors)
-            {
-                dataGridView2.Rows.Add(
-                    error.NumberOfError,
-                    error.Message,
-                    error.ExpectedToken,
-                    $"Строка {error.Line}, Позиция {error.Column}"
-                );
-            }
+            // Регулярные выражения
+            string kppPattern = @"\b\d{4}[0-9A-Za-z]{2}\d{3}\b";
+            string phonePattern = @"(\+7|8)[\s\-]?\(?\d{3}\)?[\s\-]?\d{3}[\s\-]?\d{2}[\s\-]?\d{2}";
+            string emailPattern = @"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}";
 
-            // Сначала сбросим стиль (чтобы убрать предыдущую подсветку)
-            SetDefaultStyle();
-            // Подсветка комментариев (зелёным)
-            HighlightCommentsInRichTextBox(richTextBox1);
-            // Подсветка ошибок (розовым)
-            HighlightErrorsInRichTextBox(richTextBox1, errors);
+            // Поиск совпадений
+            var kppMatches = Regex.Matches(input, kppPattern);
+            var phoneMatches = Regex.Matches(input, phonePattern);
+            var emailMatches = Regex.Matches(input, emailPattern);
+
+            // Вывод результатов в richTextBox2
+            richTextBox2.AppendText($"КПП ({kppMatches.Count}):\n");
+            foreach (Match match in kppMatches)
+                richTextBox2.AppendText($"  {match.Value}\n");
+
+            richTextBox2.AppendText($"\nТелефоны ({phoneMatches.Count}):\n");
+            foreach (Match match in phoneMatches)
+                richTextBox2.AppendText($"  {match.Value}\n");
+
+            richTextBox2.AppendText($"\nEmail ({emailMatches.Count}):\n");
+            foreach (Match match in emailMatches)
+                richTextBox2.AppendText($"  {match.Value}\n");
+
+            // Применение подсветки в richTextBox1
+            ApplySyntaxHighlighting();
         }
 
         private void нейтрализацияОшибокToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // Исправляем текст и получаем ошибки исходного текста
-            _recoveryParser.AutoCorrectErrors();
-            string originalText = richTextBox1.Text;
-            var errors = _recoveryParser.ParseWithRecovery(originalText);
-            string correctedText = _recoveryParser.GetCorrectedText();
-
-            // Обновляем текст
-            richTextBox1.Text = correctedText;
-
-            // Пересчитываем ошибки для исправленного текста
-            _recoveryParser.AutoCorrectErrors();
-            var correctedErrors = _recoveryParser.ParseWithRecovery(correctedText);
-
-            // Обновляем таблицу ошибок
-            dataGridView2.Rows.Clear();
-            foreach (var error in correctedErrors)
-            {
-                dataGridView2.Rows.Add(
-                    error.NumberOfError,
-                    error.Message,
-                    error.ExpectedToken,
-                    $"Строка {error.Line}, Позиция {error.Column}"
-                );
-            }
-
-            // Обновляем подсветку
-            SetDefaultStyle();
-            HighlightCommentsInRichTextBox(richTextBox1);
-            HighlightErrorsInRichTextBox(richTextBox1, correctedErrors);
+            
         }
 
 
@@ -527,23 +481,6 @@ namespace lab1_compiler
             return index;
         }
 
-        /// <summary>
-        /// Подсвечивает фрагменты, где обнаружены ошибки.
-        /// Длина выделения определяется как длина ожидаемого токена (error.ExpectedToken.Length).
-        /// </summary>
-        private void HighlightErrorsInRichTextBox(RichTextBox richTextBox, List<ParsingError> errors)
-        {
-            foreach (var error in errors)
-            {
-                int startIndex = GetCharIndexFromLineAndColumn(richTextBox.Text, error.Line, error.Column);
-                int length = error.ExpectedToken.Length;
-                if (startIndex + length > richTextBox.Text.Length)
-                    length = richTextBox.Text.Length - startIndex;
-                richTextBox.Select(startIndex, length);
-                richTextBox.SelectionBackColor = Color.LightPink;
-            }
-            richTextBox.DeselectAll();
-        }
 
         /// <summary>
         /// Подсвечивает комментарии в richTextBox зеленым фоном.
@@ -582,28 +519,49 @@ namespace lab1_compiler
         }
 
         // Метод для применения синтаксической подсветки (вызывается при изменении текста)
+        // В классе Compiler добавьте следующие методы:
+
         private void ApplySyntaxHighlighting()
         {
-            // Сброс стилей
             SetDefaultStyle();
-            // Подсвечиваем комментарии (текст зеленый, фон стандартный)
             HighlightCommentsInRichTextBox(richTextBox1);
+            HighlightKPP(richTextBox1);
+            HighlightPhoneNumbers(richTextBox1);
+            HighlightEmails(richTextBox1);
         }
 
-
-        private int GetCharIndexFromLineAndPosition(RichTextBox rtb, int line, int position)
+        private void HighlightKPP(RichTextBox rtb)
         {
-            if (line < 0 || line >= rtb.Lines.Length) return -1;
-
-            int charIndex = 0;
-            for (int i = 0; i < line; i++)
+            string pattern = @"\b\d{4}[0-9A-Za-z]{2}\d{3}\b";
+            foreach (Match match in Regex.Matches(rtb.Text, pattern))
             {
-                charIndex += rtb.Lines[i].Length + 1; // учитываем символ переноса строки
+                rtb.Select(match.Index, match.Length);
+                rtb.SelectionColor = Color.Blue;
+                rtb.SelectionFont = new Font(rtb.Font, FontStyle.Bold);
             }
-            return charIndex + position;
         }
 
+        private void HighlightPhoneNumbers(RichTextBox rtb)
+        {
+            string pattern = @"(\+7|8)[\s\-]?\(?\d{3}\)?[\s\-]?\d{3}[\s\-]?\d{2}[\s\-]?\d{2}";
+            foreach (Match match in Regex.Matches(rtb.Text, pattern))
+            {
+                rtb.Select(match.Index, match.Length);
+                rtb.SelectionColor = Color.DarkOrange;
+                rtb.SelectionFont = new Font(rtb.Font, FontStyle.Underline);
+            }
+        }
 
+        private void HighlightEmails(RichTextBox rtb)
+        {
+            string pattern = @"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}";
+            foreach (Match match in Regex.Matches(rtb.Text, pattern))
+            {
+                rtb.Select(match.Index, match.Length);
+                rtb.SelectionColor = Color.Purple;
+                rtb.SelectionFont = new Font(rtb.Font, FontStyle.Italic);
+            }
+        }
 
         ///
 
