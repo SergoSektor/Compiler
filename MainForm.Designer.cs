@@ -56,8 +56,8 @@
             справкаToolStripMenuItem = new ToolStripMenuItem();
             вызовСправкиToolStripMenuItem = new ToolStripMenuItem();
             оПрограммеToolStripMenuItem = new ToolStripMenuItem();
-            локализацияToolStripMenuItem = new ToolStripMenuItem();
             menuStrip2 = new MenuStrip();
+            нейтрализацияОшибокToolStripMenuItem = new ToolStripMenuItem();
             toolStrip1 = new ToolStrip();
             toolStripButtonAdd = new ToolStripButton();
             toolStripButtonOpen = new ToolStripButton();
@@ -75,20 +75,13 @@
             splitContainer1 = new SplitContainer();
             richTextBoxLineNumbers = new RichTextBox();
             richTextBox1 = new RichTextBox();
-            splitContainer2 = new SplitContainer();
             dataGridView1 = new DataGridView();
             Code = new DataGridViewTextBoxColumn();
             Type = new DataGridViewTextBoxColumn();
             Value = new DataGridViewTextBoxColumn();
             Position = new DataGridViewTextBoxColumn();
-            dataGridView2 = new DataGridView();
-            Number = new DataGridViewTextBoxColumn();
-            Message = new DataGridViewTextBoxColumn();
-            Expected = new DataGridViewTextBoxColumn();
-            Start = new DataGridViewTextBoxColumn();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
-            нейтрализацияОшибокToolStripMenuItem = new ToolStripMenuItem();
             menuStrip2.SuspendLayout();
             toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)NiceWindow).BeginInit();
@@ -99,12 +92,7 @@
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
             splitContainer1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)splitContainer2).BeginInit();
-            splitContainer2.Panel1.SuspendLayout();
-            splitContainer2.Panel2.SuspendLayout();
-            splitContainer2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)dataGridView2).BeginInit();
             statusStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -218,48 +206,56 @@
             постановкаЗадачиToolStripMenuItem.Name = "постановкаЗадачиToolStripMenuItem";
             постановкаЗадачиToolStripMenuItem.Size = new Size(288, 22);
             постановкаЗадачиToolStripMenuItem.Text = "Постановка задачи";
+            постановкаЗадачиToolStripMenuItem.Click += постановкаЗадачиToolStripMenuItem_Click;
             // 
             // грамматикаToolStripMenuItem
             // 
             грамматикаToolStripMenuItem.Name = "грамматикаToolStripMenuItem";
             грамматикаToolStripMenuItem.Size = new Size(288, 22);
             грамматикаToolStripMenuItem.Text = "Грамматика";
+            грамматикаToolStripMenuItem.Click += грамматикаToolStripMenuItem_Click;
             // 
             // классификацияГрамматикиToolStripMenuItem
             // 
             классификацияГрамматикиToolStripMenuItem.Name = "классификацияГрамматикиToolStripMenuItem";
             классификацияГрамматикиToolStripMenuItem.Size = new Size(288, 22);
             классификацияГрамматикиToolStripMenuItem.Text = "Классификация грамматики";
+            классификацияГрамматикиToolStripMenuItem.Click += классификацияГрамматикиToolStripMenuItem_Click;
             // 
             // методАнализаToolStripMenuItem
             // 
             методАнализаToolStripMenuItem.Name = "методАнализаToolStripMenuItem";
             методАнализаToolStripMenuItem.Size = new Size(288, 22);
             методАнализаToolStripMenuItem.Text = "Метод анализа";
+            методАнализаToolStripMenuItem.Click += методАнализаToolStripMenuItem_Click;
             // 
             // диагностикаИНейтрализацияОшибокToolStripMenuItem
             // 
             диагностикаИНейтрализацияОшибокToolStripMenuItem.Name = "диагностикаИНейтрализацияОшибокToolStripMenuItem";
             диагностикаИНейтрализацияОшибокToolStripMenuItem.Size = new Size(288, 22);
             диагностикаИНейтрализацияОшибокToolStripMenuItem.Text = "Диагностика и нейтрализация ошибок";
+            диагностикаИНейтрализацияОшибокToolStripMenuItem.Click += диагностикаИНейтрализацияОшибокToolStripMenuItem_Click;
             // 
             // тестовыйПримерToolStripMenuItem
             // 
             тестовыйПримерToolStripMenuItem.Name = "тестовыйПримерToolStripMenuItem";
             тестовыйПримерToolStripMenuItem.Size = new Size(288, 22);
             тестовыйПримерToolStripMenuItem.Text = "Тестовый пример";
+            тестовыйПримерToolStripMenuItem.Click += тестовыйПримерToolStripMenuItem_Click;
             // 
             // списокЛитературыToolStripMenuItem
             // 
             списокЛитературыToolStripMenuItem.Name = "списокЛитературыToolStripMenuItem";
             списокЛитературыToolStripMenuItem.Size = new Size(288, 22);
             списокЛитературыToolStripMenuItem.Text = "Список литературы";
+            списокЛитературыToolStripMenuItem.Click += списокЛитературыToolStripMenuItem_Click;
             // 
             // исходныйКодПрограммыToolStripMenuItem
             // 
             исходныйКодПрограммыToolStripMenuItem.Name = "исходныйКодПрограммыToolStripMenuItem";
             исходныйКодПрограммыToolStripMenuItem.Size = new Size(288, 22);
             исходныйКодПрограммыToolStripMenuItem.Text = "Исходный код программы";
+            исходныйКодПрограммыToolStripMenuItem.Click += исходныйКодПрограммыToolStripMenuItem_Click;
             // 
             // пускToolStripMenuItem
             // 
@@ -288,21 +284,22 @@
             оПрограммеToolStripMenuItem.Text = "О программе";
             оПрограммеToolStripMenuItem.Click += оПрограммеToolStripMenuItem_Click;
             // 
-            // локализацияToolStripMenuItem
-            // 
-            локализацияToolStripMenuItem.Name = "локализацияToolStripMenuItem";
-            локализацияToolStripMenuItem.Size = new Size(91, 20);
-            локализацияToolStripMenuItem.Text = "Локализация";
-            // 
             // menuStrip2
             // 
             menuStrip2.ImageScalingSize = new Size(20, 20);
-            menuStrip2.Items.AddRange(new ToolStripItem[] { файлToolStripMenuItem, правкаToolStripMenuItem, текстToolStripMenuItem, пускToolStripMenuItem, справкаToolStripMenuItem, локализацияToolStripMenuItem, нейтрализацияОшибокToolStripMenuItem });
+            menuStrip2.Items.AddRange(new ToolStripItem[] { файлToolStripMenuItem, правкаToolStripMenuItem, текстToolStripMenuItem, пускToolStripMenuItem, справкаToolStripMenuItem, нейтрализацияОшибокToolStripMenuItem });
             menuStrip2.Location = new Point(0, 0);
             menuStrip2.Name = "menuStrip2";
-            menuStrip2.Size = new Size(927, 24);
+            menuStrip2.Size = new Size(738, 24);
             menuStrip2.TabIndex = 1;
             menuStrip2.Text = "menuStrip2";
+            // 
+            // нейтрализацияОшибокToolStripMenuItem
+            // 
+            нейтрализацияОшибокToolStripMenuItem.Name = "нейтрализацияОшибокToolStripMenuItem";
+            нейтрализацияОшибокToolStripMenuItem.Size = new Size(152, 20);
+            нейтрализацияОшибокToolStripMenuItem.Text = "Нейтрализация ошибок";
+            нейтрализацияОшибокToolStripMenuItem.Click += нейтрализацияОшибокToolStripMenuItem_Click;
             // 
             // toolStrip1
             // 
@@ -310,7 +307,7 @@
             toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripButtonAdd, toolStripButtonOpen, toolStripButtonSave, toolStripButtonCancel, toolStripButtonRepeat, toolStripButtonCopy, toolStripButtonCut, toolStripButtonInsert, toolStripButtonPlay, toolStripButtonHelp, toolStripButtonAbout, toolStripFontSizeComboBox });
             toolStrip1.Location = new Point(0, 24);
             toolStrip1.Name = "toolStrip1";
-            toolStrip1.Size = new Size(927, 57);
+            toolStrip1.Size = new Size(738, 57);
             toolStrip1.TabIndex = 16;
             toolStrip1.Text = "toolStrip1";
             // 
@@ -458,9 +455,9 @@
             // NiceWindow.Panel2
             // 
             NiceWindow.Panel2.AutoScroll = true;
-            NiceWindow.Panel2.Controls.Add(splitContainer2);
+            NiceWindow.Panel2.Controls.Add(dataGridView1);
             NiceWindow.Panel2.RightToLeft = RightToLeft.No;
-            NiceWindow.Size = new Size(903, 431);
+            NiceWindow.Size = new Size(714, 431);
             NiceWindow.SplitterDistance = 213;
             NiceWindow.TabIndex = 19;
             // 
@@ -477,8 +474,8 @@
             // splitContainer1.Panel2
             // 
             splitContainer1.Panel2.Controls.Add(richTextBox1);
-            splitContainer1.Size = new Size(903, 213);
-            splitContainer1.SplitterDistance = 45;
+            splitContainer1.Size = new Size(714, 213);
+            splitContainer1.SplitterDistance = 35;
             splitContainer1.TabIndex = 0;
             // 
             // richTextBoxLineNumbers
@@ -498,27 +495,10 @@
             richTextBox1.EnableAutoDragDrop = true;
             richTextBox1.Location = new Point(3, 3);
             richTextBox1.Name = "richTextBox1";
-            richTextBox1.Size = new Size(848, 207);
+            richTextBox1.Size = new Size(669, 207);
             richTextBox1.TabIndex = 25;
             richTextBox1.Text = "";
             richTextBox1.WordWrap = false;
-            // 
-            // splitContainer2
-            // 
-            splitContainer2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            splitContainer2.Location = new Point(3, 3);
-            splitContainer2.Name = "splitContainer2";
-            // 
-            // splitContainer2.Panel1
-            // 
-            splitContainer2.Panel1.Controls.Add(dataGridView1);
-            // 
-            // splitContainer2.Panel2
-            // 
-            splitContainer2.Panel2.Controls.Add(dataGridView2);
-            splitContainer2.Size = new Size(897, 208);
-            splitContainer2.SplitterDistance = 429;
-            splitContainer2.TabIndex = 1;
             // 
             // dataGridView1
             // 
@@ -527,11 +507,11 @@
             dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
             dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridView1.Columns.AddRange(new DataGridViewColumn[] { Code, Type, Value, Position });
-            dataGridView1.Location = new Point(3, 3);
+            dataGridView1.Location = new Point(3, 6);
             dataGridView1.Name = "dataGridView1";
             dataGridView1.RowHeadersWidth = 60;
-            dataGridView1.Size = new Size(423, 202);
-            dataGridView1.TabIndex = 23;
+            dataGridView1.Size = new Size(708, 202);
+            dataGridView1.TabIndex = 25;
             // 
             // Code
             // 
@@ -557,45 +537,13 @@
             Position.Name = "Position";
             Position.ReadOnly = true;
             // 
-            // dataGridView2
-            // 
-            dataGridView2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            dataGridView2.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            dataGridView2.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
-            dataGridView2.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridView2.Columns.AddRange(new DataGridViewColumn[] { Number, Message, Expected, Start });
-            dataGridView2.Location = new Point(3, 3);
-            dataGridView2.Name = "dataGridView2";
-            dataGridView2.Size = new Size(458, 202);
-            dataGridView2.TabIndex = 22;
-            // 
-            // Number
-            // 
-            Number.HeaderText = "№";
-            Number.Name = "Number";
-            // 
-            // Message
-            // 
-            Message.HeaderText = "Ошибка";
-            Message.Name = "Message";
-            // 
-            // Expected
-            // 
-            Expected.HeaderText = "Ожидалось";
-            Expected.Name = "Expected";
-            // 
-            // Start
-            // 
-            Start.HeaderText = "Позиция";
-            Start.Name = "Start";
-            // 
             // statusStrip1
             // 
             statusStrip1.ImageScalingSize = new Size(20, 20);
             statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel1 });
             statusStrip1.Location = new Point(0, 518);
             statusStrip1.Name = "statusStrip1";
-            statusStrip1.Size = new Size(927, 22);
+            statusStrip1.Size = new Size(738, 22);
             statusStrip1.TabIndex = 20;
             statusStrip1.Text = "statusStrip1";
             // 
@@ -605,18 +553,11 @@
             toolStripStatusLabel1.Size = new Size(118, 17);
             toolStripStatusLabel1.Text = "toolStripStatusLabel1";
             // 
-            // нейтрализацияОшибокToolStripMenuItem
-            // 
-            нейтрализацияОшибокToolStripMenuItem.Name = "нейтрализацияОшибокToolStripMenuItem";
-            нейтрализацияОшибокToolStripMenuItem.Size = new Size(152, 20);
-            нейтрализацияОшибокToolStripMenuItem.Text = "Нейтрализация ошибок";
-            нейтрализацияОшибокToolStripMenuItem.Click += нейтрализацияОшибокToolStripMenuItem_Click;
-            // 
             // Compiler
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(927, 540);
+            ClientSize = new Size(738, 540);
             Controls.Add(statusStrip1);
             Controls.Add(NiceWindow);
             Controls.Add(toolStrip1);
@@ -635,12 +576,7 @@
             splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
             splitContainer1.ResumeLayout(false);
-            splitContainer2.Panel1.ResumeLayout(false);
-            splitContainer2.Panel2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)splitContainer2).EndInit();
-            splitContainer2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
-            ((System.ComponentModel.ISupportInitialize)dataGridView2).EndInit();
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
             ResumeLayout(false);
@@ -653,7 +589,6 @@
         private ToolStripMenuItem текстToolStripMenuItem;
         private ToolStripMenuItem пускToolStripMenuItem;
         private ToolStripMenuItem справкаToolStripMenuItem;
-        private ToolStripMenuItem локализацияToolStripMenuItem;
         private MenuStrip menuStrip2;
         private ToolStripMenuItem создатьToolStripMenuItem;
         private ToolStripMenuItem открытьToolStripMenuItem;
@@ -696,17 +631,11 @@
         private RichTextBox richTextBox1;
         private StatusStrip statusStrip1;
         private ToolStripStatusLabel toolStripStatusLabel1;
-        private SplitContainer splitContainer2;
         private DataGridView dataGridView1;
         private DataGridViewTextBoxColumn Code;
         private DataGridViewTextBoxColumn Type;
         private DataGridViewTextBoxColumn Value;
         private DataGridViewTextBoxColumn Position;
-        private DataGridView dataGridView2;
-        private DataGridViewTextBoxColumn Number;
-        private DataGridViewTextBoxColumn Message;
-        private DataGridViewTextBoxColumn Expected;
-        private DataGridViewTextBoxColumn Start;
         private ToolStripMenuItem нейтрализацияОшибокToolStripMenuItem;
     }
 }

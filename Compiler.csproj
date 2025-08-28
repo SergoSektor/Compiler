@@ -10,14 +10,49 @@
 
   <ItemGroup>
     <None Remove="Resources\About.html" />
+    <None Remove="Resources\CGrammary.html" />
+    <None Remove="Resources\Code.html" />
+    <None Remove="Resources\DiagErr.html" />
+    <None Remove="Resources\Grammary.html" />
     <None Remove="Resources\Help.html" />
+    <None Remove="Resources\ListLibrary.html" />
+    <None Remove="Resources\MAnalysis.html" />
+    <None Remove="Resources\Task.html" />
+    <None Remove="Resources\Test.html" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Resources\Task.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="Resources\About.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Resources\CGrammary.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Code.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\DiagErr.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Grammary.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Resources\Help.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\ListLibrary.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\MAnalysis.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Test.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

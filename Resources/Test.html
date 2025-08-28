@@ -1,0 +1,90 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тестовые примеры комментариев PHP</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/themes/prism.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .valid {
+            background: #f0fff4;
+            border: 2px solid #2ecc71;
+        }
+
+        .invalid {
+            background: #fff5f5;
+            border: 2px solid #e74c3c;
+        }
+
+        h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+        }
+
+        .error {
+            color: #c0392b;
+            font-weight: bold;
+            padding: 8px;
+            background: #ffeaea;
+            border-radius: 4px;
+        }
+
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Тестовые примеры для комментариев PHP</h1>
+
+    <div class="test-section valid">
+        <h2>✅ Корректные комментарии</h2>
+
+        <h3>1. Однострочный комментарий (//)</h3>
+        <pre><code class="language-php">// Однострочный комментарий</code></pre>
+
+        <h3>2. Альтернативный однострочный (#)</h3>
+        <pre><code class="language-php"># Ещё один однострочный комментарий</code></pre>
+
+        <h3>3. Многострочный комментарий</h3>
+        <pre><code class="language-php">/* Многострочный
+   комментарий */</code></pre>
+
+        <h3>4. Пустой многострочный комментарий</h3>
+        <pre><code class="language-php">/**/</code></pre>
+    </div>
+
+    <div class="test-section invalid">
+        <h2>❌ Некорректные комментарии</h2>
+
+        <h3>1. Неполный однострочный комментарий</h3>
+        <pre><code class="language-php">/ Однострочный комментарий</code></pre>
+        <p class="error">Ошибка: отсутствует второй символ '/'</p>
+
+        <h3>2. Незакрытый многострочный комментарий</h3>
+        <pre><code class="language-php">/* Многострочный
+   комментарий *</code></pre>
+        <p class="error">Ошибка: отсутствует закрывающий '*/'</p>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/components/prism-php.min.js"></script>
+</body>
+</html>

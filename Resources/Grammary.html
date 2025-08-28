@@ -1,0 +1,41 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Грамматика комментариев PHP</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Автоматная грамматика комментариев PHP</h1>
+    <div class="grammar">
+        G[PHP_Comments_FA] = (V<sub>T</sub>, V<sub>N</sub>, P, S):<br>
+        V<sub>T</sub> = { '/', '*', '#', ␤, c }<br>
+        V<sub>N</sub> = { q<sub>0</sub>, q<sub>1</sub>, q<sub>SL</sub>, q<sub>ML</sub>, q<sub>*</sub>, q<sub>a</sub> }<br>
+        S = q<sub>0</sub><br>
+        P = {<br>
+        &emsp;1. q<sub>0</sub> → / q<sub>1</sub><br>
+        &emsp;2. q<sub>0</sub> → # q<sub>SL</sub><br>
+        &emsp;3. q<sub>1</sub> → / q<sub>SL</sub><br>
+        &emsp;4. q<sub>1</sub> → * q<sub>ML</sub><br>
+        &emsp;5. q<sub>SL</sub> → c q<sub>SL</sub><br>
+        &emsp;6. q<sub>SL</sub> → ␤ q<sub>a</sub><br>
+        &emsp;7. q<sub>ML</sub> → c q<sub>ML</sub><br>
+        &emsp;8. q<sub>ML</sub> → * q<sub>*</sub><br>
+        &emsp;9. q<sub>*</sub> → * q<sub>*</sub><br>
+        &emsp;10. q<sub>*</sub> → c q<sub>ML</sub><br>
+        &emsp;11. q<sub>*</sub> → / q<sub>a</sub><br>
+        &emsp;12. q<sub>a</sub> → ε<br>
+        }
+    </div>
+
+    <div class="legend">
+        <h3>Обозначения:</h3>
+        <ul>
+            <li>␤ - символ перевода строки (U+2424)</li>
+            <li>c - любой символ, кроме '/', '*', '#', ␤</li>
+            <li>ε - пустая строка (конечное состояние)</li>
+        </ul>
+    </div>
+</body>
+</html>

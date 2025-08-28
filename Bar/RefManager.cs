@@ -9,22 +9,52 @@ namespace lab1_compiler.Bar
     {
         private readonly string _helpFilePath;
         private readonly string _aboutFilePath;
+        private readonly string _taskPath;
+        private readonly string _grammaryPath;
+        private readonly string _cgrammaryPath;
+        private readonly string _manalysisPath;
+        private readonly string _diagErrPath;
+        private readonly string _testPath;
+        private readonly string _listLibraryPath;
+        private readonly string _codePath;
 
-        public RefManager(string helpPath, string aboutPath)
+        public RefManager(
+            string helpPath,
+            string aboutPath,
+            string taskPath,
+            string grammaryPath,
+            string cgrammaryPath,
+            string manalysisPath,
+            string diagErrPath,
+            string testPath,
+            string listLibraryPath,
+            string codePath)
         {
             _helpFilePath = helpPath;
             _aboutFilePath = aboutPath;
+            _taskPath = taskPath;
+            _grammaryPath = grammaryPath;
+            _cgrammaryPath = cgrammaryPath;
+            _manalysisPath = manalysisPath;
+            _diagErrPath = diagErrPath;
+            _testPath = testPath;
+            _listLibraryPath = listLibraryPath;
+            _codePath = codePath;
         }
 
-        public void ShowHelp()
-        {
-            OpenHtmlFile(_helpFilePath, "Справка");
-        }
+        // Существующие методы
+        public void ShowHelp() => OpenHtmlFile(_helpFilePath, "Справка");
+        public void ShowAbout() => OpenHtmlFile(_aboutFilePath, "О программе");
 
-        public void ShowAbout()
-        {
-            OpenHtmlFile(_aboutFilePath, "О программе");
-        }
+        // Новые методы для дополнительных ссылок
+        public void ShowTask() => OpenHtmlFile(_taskPath, "Постановка задачи");
+        public void ShowGrammar() => OpenHtmlFile(_grammaryPath, "Грамматика");
+        public void ShowCGrammar() => OpenHtmlFile(_cgrammaryPath, "Классификация грамматики");
+        public void ShowMAnalysis() => OpenHtmlFile(_manalysisPath, "Метод анализа");
+        public void ShowDiagError() => OpenHtmlFile(_diagErrPath, "Диагностика ошибок");
+        public void ShowTest() => OpenHtmlFile(_testPath, "Тестовый пример");
+        public void ShowLibrary() => OpenHtmlFile(_listLibraryPath, "Список литературы");
+        public void ShowCode() => OpenHtmlFile(_codePath, "Исходный код");
 
         private void OpenHtmlFile(string filePath, string title)
         {
@@ -39,12 +69,11 @@ namespace lab1_compiler.Bar
                     return;
                 }
 
-                var processStartInfo = new ProcessStartInfo
+                Process.Start(new ProcessStartInfo
                 {
                     FileName = filePath,
                     UseShellExecute = true
-                };
-                Process.Start(processStartInfo);
+                });
             }
             catch (Exception ex)
             {

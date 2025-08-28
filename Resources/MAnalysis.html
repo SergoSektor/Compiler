@@ -1,0 +1,72 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Метод анализа комментариев PHP</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Алгоритм лексического анализа комментариев PHP</h1>
+
+    <p>Метод анализа реализован через <strong>конечный автомат</strong>, построенный на базе автоматной грамматики G[PHP_Comments_FA].</p>
+
+    <h2>Принцип работы</h2>
+    <p>Анализ выполняется последовательной обработкой символов входного потока с переходом между состояниями:</p>
+    <ol>
+        <li>Стартовое состояние: <code>q<sub>0</sub></code></li>
+        <li>Определение типа комментария по стартовым символам (<code>//</code>, <code>#</code>, <code>/*</code>)</li>
+        <li>Считывание содержимого до завершающих символов (<code>␤</code> для однострочных, <code>*/</code> для многострочных)</li>
+    </ol>
+
+    <h2>Диаграмма состояний</h2>
+    <div class="state-diagram">
+        <pre>
+        [q0] -- / --> [q1]
+        [q0] -- # --> [qSL]
+        [q1] -- / --> [qSL]
+        [q1] -- * --> [qML]
+        [qSL] -- c --> [qSL]
+        [qSL] -- ␤ --> [qa]
+        [qML] -- c --> [qML]
+        [qML] -- * --> [q*]
+        [q*] -- * --> [q*]
+        [q*] -- / --> [qa]
+        [q*] -- c --> [qML]
+        </pre>
+    </div>
+
+    <h2>Ключевые особенности</h2>
+    <ul>
+        <li>Автомат игнорирует комментарии внутри строк (<code>$str = "// не комментарий";</code>)</li>
+        <li>Обработка экранированных символов внутри комментариев</li>
+        <li>Определение конца комментария через символы <code>␤</code> (перевод строки) и <code>*/</code></li>
+    </ul>
+
+    <h3>Пример работы</h3>
+    <div class="example">
+        <p>Для входа <code>/* текст # */</code>:</p>
+        <ol>
+            <li><code>q0 → / → q1</code></li>
+            <li><code>q1 → * → qML</code></li>
+            <li>Считывание до <code>*</code> → переход в <code>q*</code></li>
+            <li><code>q* → / → qa</code> (успешное завершение)</li>
+        </ol>
+    </div>
+
+    <p><strong>Граф конечного автомата:</strong></p>
+    <div class="state-diagram">
+        <img src="finite_state_machine.jpg"
+             alt="Диаграмма состояний конечного автомата для комментариев PHP"
+             title="Конечный автомат обработки комментариев">
+    </div>
+
+    <div class="legend">
+        <p>Обозначения:</p>
+        <ul>
+            <li><code>c</code> - любой символ кроме <code>/</code>, <code>*</code>, <code>#</code>, <code>␤</code></li>
+            <li><code>␤</code> - символ перевода строки (U+2424)</li>
+        </ul>
+    </div>
+</body>
+</html>
